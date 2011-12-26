@@ -64,9 +64,9 @@ public class MBeanManager implements MonitorProcessorObserver {
 		}
 		//FIXME
 		if (data.getValue().isLongType()) {
-			dynMBean.getAttributes().put(name.getName(), String.valueOf(((LongValueType) data.getValue()).getValue()));
+			dynMBean.getAttributes().put(name.getName(), new AttributeData(name.getDescription(), String.valueOf(((LongValueType) data.getValue()).getValue())));
 		} else {
-			dynMBean.getAttributes().put(name.getName(), String.valueOf(((DoubleValueType) data.getValue()).getValue()));
+			dynMBean.getAttributes().put(name.getName(), new AttributeData(name.getDescription(), String.valueOf(((DoubleValueType) data.getValue()).getValue())));
 		}
 		try {
 			mb = mbServer.registerMBean(dynMBean, objectName);

@@ -23,19 +23,19 @@ import javax.management.ReflectionException;
  */
 public class DynamicMBean implements javax.management.DynamicMBean {
 
-	private Map<String, String> attributes = new HashMap<String, String>();
+	private Map<String, AttributeData> attributes = new HashMap<String, AttributeData>();
 	
 	/**
 	 * @return the attributes
 	 */
-	public Map<String, String> getAttributes() {
+	public Map<String, AttributeData> getAttributes() {
 		return attributes;
 	}
 
 	/**
 	 * @param attributes the attributes to set
 	 */
-	public void setAttributes(Map<String, String> attributes) {
+	public void setAttributes(Map<String, AttributeData> attributes) {
 		this.attributes = attributes;
 	}
 
@@ -52,8 +52,8 @@ public class DynamicMBean implements javax.management.DynamicMBean {
 	 */
 	public AttributeList getAttributes(String[] arg0) {
        AttributeList list = new AttributeList();
-        for (Entry<String, String> entry : attributes.entrySet()) {
-            String value = entry.getValue();
+        for (Entry<String, AttributeData> entry : attributes.entrySet()) {
+            String value = entry.getValue().getValue();
             if (value != null)
                 list.add(new Attribute(entry.getKey(), value));
         }
@@ -68,10 +68,11 @@ public class DynamicMBean implements javax.management.DynamicMBean {
         Iterator<String> it = attributes.keySet().iterator();
         for (int i = 0; i < mbAttributeInfos.length; i++) {
             String name = it.next();
+            String description = attributes.get(name).getDescription();
             mbAttributeInfos[i] = new MBeanAttributeInfo(
                     name,
                     "java.lang.String",
-                    name,
+                    description,
                     true,   // isReadable
                     true,   // isWritable
                     false); // isIs
