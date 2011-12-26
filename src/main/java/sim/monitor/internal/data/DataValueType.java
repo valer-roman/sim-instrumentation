@@ -13,4 +13,8 @@ public interface DataValueType {
 	
 	public boolean isDoubleType();
 	
+	public Object getValueObject();
+	
+	public String getValueTypeClassName();
+	
 }

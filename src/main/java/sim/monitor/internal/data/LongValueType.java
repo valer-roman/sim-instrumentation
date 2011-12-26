@@ -32,5 +32,19 @@ public class LongValueType implements DataValueType {
 	public long getValue() {
 		return this.value;
 	}
+
+	/* (non-Javadoc)
+	 * @see sim.monitor.internal.data.DataValueType#getValueObject()
+	 */
+	public Object getValueObject() {
+		return value;
+	}
+
+	/* (non-Javadoc)
+	 * @see sim.monitor.internal.data.DataValueType#getValueTypeClassName()
+	 */
+	public String getValueTypeClassName() {
+		return Long.class.getName();
+	}
 	
 }

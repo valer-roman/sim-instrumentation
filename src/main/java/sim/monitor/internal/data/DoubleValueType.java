@@ -32,5 +32,19 @@ public class DoubleValueType implements DataValueType {
 	public double getValue() {
 		return this.value;
 	}
+
+	/* (non-Javadoc)
+	 * @see sim.monitor.internal.data.DataValueType#getValueObject()
+	 */
+	public Object getValueObject() {
+		return value;
+	}
+
+	/* (non-Javadoc)
+	 * @see sim.monitor.internal.data.DataValueType#getValueTypeClassName()
+	 */
+	public String getValueTypeClassName() {
+		return Double.class.getName();
+	}
 	
 }

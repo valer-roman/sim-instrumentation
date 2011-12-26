@@ -25,7 +25,6 @@ public class MonitorLongRate extends Monitor {
 	public MonitorLongRate(Domain domain, String name, String description, TimePeriod timePeriod) {
 		super(domain, name, description);
 		MonitorProcessor rateProcessor = new RateProcessor(new Name(domain, name, description), timePeriod);
-		//FIXME
 		rateProcessor.addObserver(MBeanManager.instance());
 		this.processors.add(rateProcessor);
 	}

@@ -1,5 +1,6 @@
 import sim.monitor.MonitorCounter;
 import sim.monitor.MonitorDoubleValue;
+import sim.monitor.MonitorLongValue;
 import sim.monitor.naming.Domain;
 import sim.monitor.timing.TimePeriod;
 import sim.monitor.timing.TimeUnit;
@@ -29,6 +30,10 @@ public class Test {
 		
 		MonitorDoubleValue mdv = new MonitorDoubleValue(domain, "Double Value Testing", "description");
 		mdv.hit(2.45);
+
+		MonitorLongValue mlv = new MonitorLongValue(domain, "Long Value Testing", "description long value testing");
+		mlv.hit(13);
+
 	}
 
 }

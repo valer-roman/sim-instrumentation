@@ -17,8 +17,6 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
 import sim.monitor.internal.data.Data;
-import sim.monitor.internal.data.DoubleValueType;
-import sim.monitor.internal.data.LongValueType;
 import sim.monitor.internal.observer.MonitorProcessorObserver;
 import sim.monitor.naming.Name;
 
@@ -63,11 +61,7 @@ public class MBeanManager implements MonitorProcessorObserver {
 			//mbServer.registerMBean(object, name)MBean(mb.getObjectName());
 		}
 		//FIXME
-		if (data.getValue().isLongType()) {
-			dynMBean.getAttributes().put(name.getName(), new AttributeData(name.getDescription(), String.valueOf(((LongValueType) data.getValue()).getValue())));
-		} else {
-			dynMBean.getAttributes().put(name.getName(), new AttributeData(name.getDescription(), String.valueOf(((DoubleValueType) data.getValue()).getValue())));
-		}
+		dynMBean.getAttributes().put(name.getName(), new AttributeData(name.getDescription(), data.getValue()));
 		try {
 			mb = mbServer.registerMBean(dynMBean, objectName);
 		} catch (InstanceAlreadyExistsException e) {
