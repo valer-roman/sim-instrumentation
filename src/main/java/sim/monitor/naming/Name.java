@@ -4,8 +4,9 @@
 package sim.monitor.naming;
 
 /**
+ * This is the full name of a monitor, the domain plus the monitor name and description
+ * 
  * @author val
- *
  */
 public class Name {
 
@@ -13,10 +14,24 @@ public class Name {
 	private String name;
 	private String description;
 	
+	/**
+	 * Constructs a new monitor name
+	 * The description here is the empty string
+	 * 
+	 * @param domain the domain
+	 * @param name the name of the monitor
+	 */
 	public Name(Domain domain, String name) {
 		this(domain, name, "");
 	}
 	
+	/**
+	 * Constructs a monitor name
+	 * 
+	 * @param domain the domain
+	 * @param name the name of the monitor
+	 * @param description the description of the monitor
+	 */
 	public Name(Domain domain, String name, String description) {
 		this.domain = domain;
 		this.name = name;

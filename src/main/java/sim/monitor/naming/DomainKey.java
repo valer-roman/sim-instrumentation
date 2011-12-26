@@ -4,8 +4,10 @@
 package sim.monitor.naming;
 
 /**
- * @author valer
- *
+ * Class used to define categories on a domain
+ * A category has a type and a name, they are mapped here using the key and value properties.
+ * 
+ * @author val
  */
 public class DomainKey {
 
@@ -18,14 +20,14 @@ public class DomainKey {
 	}
 
 	/**
-	 * @return the key
+	 * @return the category type
 	 */
 	public String getKey() {
 		return key;
 	}
 
 	/**
-	 * @return the value
+	 * @return the category name
 	 */
 	public String getValue() {
 		return value;
