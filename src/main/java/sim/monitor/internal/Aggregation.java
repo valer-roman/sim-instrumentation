@@ -12,6 +12,8 @@ public enum Aggregation {
 	None, 
 	Average,
 	Minimum,
-	Maximum
+	Maximum,
+	Sum,
+	Count
 	
 }

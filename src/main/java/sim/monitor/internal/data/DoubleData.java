@@ -37,10 +37,10 @@ public class DoubleData implements Data {
 	 * @see sim.monitor.internal.data.Data#setValue(java.lang.Object)
 	 */
 	public void setValue(Object value) {
-		if (!(value instanceof Long)) {
+		if (!(value instanceof Double)) {
 			return;
 		}
-		this.value = (Long) value;
+		this.value = (Double) value;
 	}
 
 	public double getValue() {
