@@ -4,6 +4,7 @@
 package sim.monitor;
 
 import sim.monitor.internal.RateProcessor;
+import sim.monitor.internal.data.LongValueType;
 import sim.monitor.mbean.MBeanManager;
 import sim.monitor.naming.Domain;
 import sim.monitor.naming.Name;
@@ -31,7 +32,7 @@ public class MonitorLongRate extends Monitor {
 	 * @see sim.monitor.Monitor#hit(Object value)
 	 */
 	public void hit(long value) {
-		super.hit(new Long(value));
+		super.hit(new LongValueType(value));
 	}
 	
 }

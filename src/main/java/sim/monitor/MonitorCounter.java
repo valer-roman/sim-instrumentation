@@ -3,7 +3,9 @@
  */
 package sim.monitor;
 
-import sim.monitor.internal.CounterProcessor;
+import sim.monitor.internal.Aggregation;
+import sim.monitor.internal.AggregationProcessor;
+import sim.monitor.internal.data.LongValueType;
 import sim.monitor.mbean.MBeanManager;
 import sim.monitor.naming.Domain;
 import sim.monitor.naming.Name;
@@ -31,7 +33,7 @@ public class MonitorCounter extends Monitor {
 	 */
 	public MonitorCounter(Domain domain, String name, String description) {
 		super(domain, name, description);
-		this.processor = new CounterProcessor(new Name(domain, name, description));
+		this.processor = new AggregationProcessor(new Name(domain, name, description), Aggregation.Sum);
 		//FIXME move this code somewhere else, maybe ...
 		this.processor.addObserver(MBeanManager.instance());
 	}
@@ -53,7 +55,7 @@ public class MonitorCounter extends Monitor {
 	 * A hit on this monitor increments the counter
 	 */
 	public void hit() {
-		super.hit(new Long(1));
+		super.hit(new LongValueType(1));
 		rate.hit(new Long(1)); //FIXME iterate though all the rate monitors and hit them
 	}
 	

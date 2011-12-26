@@ -16,7 +16,6 @@ import sim.monitor.timing.TimeUnit;
 public abstract class AbstractMonitorProcessor implements MonitorProcessor {
 
 	protected Name name;
-	protected Class<? extends Data> dataClass;
 	
 	private Aggregation aggregation = Aggregation.None;
 	private TimeUnit timeUnit = TimeUnit.None;

@@ -17,10 +17,6 @@ public interface MonitorProcessor {
 
 	public Name getName();
 	
-	public void setProcessingOptions(Aggregation agg, TimeUnit timeUnit, int timeUnitMultiplier);
-	
-	public Data newDataInstance();
-	
 	public void input(Data data);
 
 	public void addObserver(MonitorProcessorObserver observer);

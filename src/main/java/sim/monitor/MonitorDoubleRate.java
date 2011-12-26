@@ -3,6 +3,7 @@
  */
 package sim.monitor;
 
+import sim.monitor.internal.data.DoubleValueType;
 import sim.monitor.naming.Domain;
 
 /**
@@ -16,7 +17,7 @@ public class MonitorDoubleRate extends Monitor {
 	}
 	
 	public void hit(double value) {
-		super.hit(new Double(value));
+		super.hit(new DoubleValueType(value));
 	}
 	
 }

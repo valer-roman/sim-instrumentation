@@ -4,6 +4,7 @@
 package sim.monitor;
 
 import sim.monitor.internal.DoubleValueProcessor;
+import sim.monitor.internal.data.DoubleValueType;
 import sim.monitor.mbean.MBeanManager;
 import sim.monitor.naming.Domain;
 import sim.monitor.naming.Name;
@@ -24,7 +25,7 @@ public class MonitorDoubleValue extends Monitor {
 	}
 	
 	public void hit(double value) {
-		super.hit(new Double(value));
+		super.hit(new DoubleValueType(value));
 	}
 
 }

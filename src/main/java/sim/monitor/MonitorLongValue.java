@@ -4,6 +4,7 @@
 package sim.monitor;
 
 import sim.monitor.internal.DoubleValueProcessor;
+import sim.monitor.internal.data.LongValueType;
 import sim.monitor.naming.Domain;
 import sim.monitor.naming.Name;
 
@@ -19,7 +20,7 @@ public class MonitorLongValue extends Monitor {
 	}
 	
 	public void hit(long value) {
-		super.hit(new Long(value));
+		super.hit(new LongValueType(value));
 	}
 
 }

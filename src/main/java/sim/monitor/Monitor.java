@@ -2,6 +2,7 @@ package sim.monitor;
 
 import sim.monitor.internal.MonitorProcessor;
 import sim.monitor.internal.data.Data;
+import sim.monitor.internal.data.DataValueType;
 import sim.monitor.naming.Domain;
 
 /**
@@ -60,9 +61,9 @@ public abstract class Monitor {
 	 * 
 	 * @param value the value registered in monitored application. Depending on monitor type can have different types (Long, Double ...)
 	 */
-	public void hit(Object value) {
+	public void hit(DataValueType value) {
 		long timestamp = System.currentTimeMillis();
-		Data data = processor.newDataInstance();
+		Data data = new Data(timestamp, value);
 		data.setTimestamp(timestamp);
 		data.setValue(value);
 		processor.input(data);
