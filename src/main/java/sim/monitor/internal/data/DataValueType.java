@@ -17,4 +17,8 @@ public interface DataValueType {
 	
 	public String getValueTypeClassName();
 	
+	public DataValueType initNew();
+	
+	public DataValueType difference(DataValueType dataValueType);
+	
 }

@@ -54,7 +54,7 @@ public abstract class Monitor {
 	 * @param name the name of the monitor
 	 * @param description the description of the monitor
 	 */
-	public Monitor(Domain domain, String name, String description) {
+	Monitor(Domain domain, String name, String description) {
 		this.domain = domain;
 	}
 	

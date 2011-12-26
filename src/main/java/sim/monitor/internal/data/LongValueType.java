@@ -46,5 +46,22 @@ public class LongValueType implements DataValueType {
 	public String getValueTypeClassName() {
 		return Long.class.getName();
 	}
+
+	/* (non-Javadoc)
+	 * @see sim.monitor.internal.data.DataValueType#initNew()
+	 */
+	public DataValueType initNew() {
+		return new LongValueType(0);
+	}
+
+	/* (non-Javadoc)
+	 * @see sim.monitor.internal.data.DataValueType#difference(sim.monitor.internal.data.DataValueType)
+	 */
+	public DataValueType difference(DataValueType dataValueType) {
+		if (!(dataValueType instanceof LongValueType)) {
+			return this;
+		}
+		return new LongValueType(value - ((LongValueType) dataValueType).getValue());
+	}
 	
 }

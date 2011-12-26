@@ -1,4 +1,5 @@
 import sim.monitor.MonitorCounter;
+import sim.monitor.MonitorDoubleDelta;
 import sim.monitor.MonitorDoubleValue;
 import sim.monitor.MonitorLongValue;
 import sim.monitor.naming.Domain;
@@ -34,6 +35,9 @@ public class Test {
 		MonitorLongValue mlv = new MonitorLongValue(domain, "Long Value Testing", "description long value testing");
 		mlv.hit(13);
 
+		MonitorDoubleDelta mdd = new MonitorDoubleDelta(domain, "Double Delta Testing", "descr. double delta testing");
+		mdd.hit(3.5);
+		mdd.hit(4.7);
 	}
 
 }

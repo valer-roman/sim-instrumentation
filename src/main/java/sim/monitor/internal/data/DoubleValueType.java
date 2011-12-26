@@ -46,5 +46,22 @@ public class DoubleValueType implements DataValueType {
 	public String getValueTypeClassName() {
 		return Double.class.getName();
 	}
+
+	/* (non-Javadoc)
+	 * @see sim.monitor.internal.data.DataValueType#initNew()
+	 */
+	public DataValueType initNew() {
+		return new DoubleValueType(0.0);
+	}
+
+	/* (non-Javadoc)
+	 * @see sim.monitor.internal.data.DataValueType#difference(sim.monitor.internal.data.DataValueType)
+	 */
+	public DataValueType difference(DataValueType dataValueType) {
+		if (!(dataValueType instanceof DoubleValueType)) {
+			return this;
+		}
+		return new DoubleValueType(value - ((DoubleValueType) dataValueType).getValue());
+	}
 	
 }
