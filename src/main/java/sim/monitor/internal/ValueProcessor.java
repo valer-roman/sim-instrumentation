@@ -7,12 +7,12 @@ import sim.monitor.internal.data.Data;
 import sim.monitor.naming.Name;
 
 /**
- * @author valer
+ * @author val
  *
  */
-public class DoubleValueProcessor extends AbstractMonitorProcessor {
+public class ValueProcessor extends AbstractMonitorProcessor {
 
-	public DoubleValueProcessor(Name name) {
+	public ValueProcessor(Name name) {
 		super(name);
 	}
 

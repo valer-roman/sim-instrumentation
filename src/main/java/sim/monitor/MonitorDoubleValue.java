@@ -3,7 +3,8 @@
  */
 package sim.monitor;
 
-import sim.monitor.internal.DoubleValueProcessor;
+import sim.monitor.internal.MonitorProcessor;
+import sim.monitor.internal.ValueProcessor;
 import sim.monitor.internal.data.DoubleValueType;
 import sim.monitor.mbean.MBeanManager;
 import sim.monitor.naming.Domain;
@@ -20,8 +21,9 @@ public class MonitorDoubleValue extends Monitor {
 
 	public MonitorDoubleValue(Domain domain, String name, String description) {
 		super(domain, name, description);
-		processor = new DoubleValueProcessor(new Name(domain, name, description));
-		processor.addObserver(MBeanManager.instance());
+		MonitorProcessor valueProcessor = new ValueProcessor(new Name(domain, name, description));
+		valueProcessor.addObserver(MBeanManager.instance());
+		processors.add(valueProcessor);
 	}
 	
 	public void hit(double value) {

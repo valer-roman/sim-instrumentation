@@ -5,6 +5,8 @@ package sim.monitor;
 
 import sim.monitor.internal.Aggregation;
 import sim.monitor.internal.AggregationProcessor;
+import sim.monitor.internal.MonitorProcessor;
+import sim.monitor.internal.RateProcessor;
 import sim.monitor.internal.data.LongValueType;
 import sim.monitor.mbean.MBeanManager;
 import sim.monitor.naming.Domain;
@@ -20,9 +22,6 @@ import sim.monitor.timing.TimePeriod;
  */
 public class MonitorCounter extends Monitor {
 
-	//FIXME should be in a list of monitors if many. each one then it is hit when this mmonitor is hit
-	private MonitorLongRate rate;
-	
 	/**
 	 * Constructs a new monitor counter.
 	 * Here also the processor is initialized.
@@ -33,9 +32,10 @@ public class MonitorCounter extends Monitor {
 	 */
 	public MonitorCounter(Domain domain, String name, String description) {
 		super(domain, name, description);
-		this.processor = new AggregationProcessor(new Name(domain, name, description), Aggregation.Sum);
+		MonitorProcessor sumProcessor = new AggregationProcessor(new Name(domain, name, description), Aggregation.Sum);
 		//FIXME move this code somewhere else, maybe ...
-		this.processor.addObserver(MBeanManager.instance());
+		sumProcessor.addObserver(MBeanManager.instance());
+		this.processors.add(sumProcessor);
 	}
 	
 	/**
@@ -48,7 +48,10 @@ public class MonitorCounter extends Monitor {
 	 */
 	/*FIXME maybe the new monitor should operate on the output values of the processor of this monitor*/
 	public void addRate(TimePeriod timePeriod, String name, String description) {
-		rate = new MonitorLongRate(domain, name, description, timePeriod);
+		MonitorProcessor rateProcessor = new RateProcessor(new Name(domain, name, description), timePeriod);
+		rateProcessor.addObserver(MBeanManager.instance());
+		this.processors.add(rateProcessor);
+		//rate = new MonitorLongRate(domain, name, description, timePeriod);
 	}
 	
 	/**
@@ -56,7 +59,6 @@ public class MonitorCounter extends Monitor {
 	 */
 	public void hit() {
 		super.hit(new LongValueType(1));
-		rate.hit(new Long(1)); //FIXME iterate though all the rate monitors and hit them
 	}
 	
 	/*FIXME not sure if needed*/

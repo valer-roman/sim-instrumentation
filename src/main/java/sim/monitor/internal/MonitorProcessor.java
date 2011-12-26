@@ -6,7 +6,6 @@ package sim.monitor.internal;
 import sim.monitor.internal.data.Data;
 import sim.monitor.internal.observer.MonitorProcessorObserver;
 import sim.monitor.naming.Name;
-import sim.monitor.timing.TimeUnit;
 
 
 /**

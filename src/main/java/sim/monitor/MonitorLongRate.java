@@ -3,6 +3,7 @@
  */
 package sim.monitor;
 
+import sim.monitor.internal.MonitorProcessor;
 import sim.monitor.internal.RateProcessor;
 import sim.monitor.internal.data.LongValueType;
 import sim.monitor.mbean.MBeanManager;
@@ -23,9 +24,10 @@ public class MonitorLongRate extends Monitor {
 	 */
 	public MonitorLongRate(Domain domain, String name, String description, TimePeriod timePeriod) {
 		super(domain, name, description);
-		this.processor = new RateProcessor(new Name(domain, name, description), timePeriod);
+		MonitorProcessor rateProcessor = new RateProcessor(new Name(domain, name, description), timePeriod);
 		//FIXME
-		this.processor.addObserver(MBeanManager.instance());
+		rateProcessor.addObserver(MBeanManager.instance());
+		this.processors.add(rateProcessor);
 	}
 	
 	/**

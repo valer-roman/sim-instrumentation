@@ -1,5 +1,8 @@
 package sim.monitor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sim.monitor.internal.MonitorProcessor;
 import sim.monitor.internal.data.Data;
 import sim.monitor.internal.data.DataValueType;
@@ -42,7 +45,7 @@ public abstract class Monitor {
 	/**
 	 * The processor used to transform the data
 	 */
-	protected MonitorProcessor processor;
+	protected List<MonitorProcessor> processors = new ArrayList<MonitorProcessor>();
 	
 	/**
 	 * Constructs a new monitor
@@ -66,6 +69,8 @@ public abstract class Monitor {
 		Data data = new Data(timestamp, value);
 		data.setTimestamp(timestamp);
 		data.setValue(value);
-		processor.input(data);
+		for (MonitorProcessor processor : processors) {
+			processor.input(data);
+		}
 	}
 }
