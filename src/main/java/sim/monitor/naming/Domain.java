@@ -74,9 +74,9 @@ public class Domain {
 	}
 
 	/**
-	 * Returns the categories of the domain in a {@link Hashtable}
+	 * Returns the categories of the domain in a Hashtable
 	 * 
-	 * @return the {@link Hashtable}
+	 * @return the Hashtable
 	 */
 	public Hashtable<String, String> getCategories() {
 		Hashtable<String, String> result = new Hashtable<String, String>();

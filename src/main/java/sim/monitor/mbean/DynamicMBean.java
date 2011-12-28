@@ -79,7 +79,7 @@ public class DynamicMBean implements javax.management.DynamicMBean {
                     dvt.getValueTypeClassName(), //"java.lang.String",
                     description,
                     true,   // isReadable
-                    true,   // isWritable
+                    false,   // isWritable
                     false); // isIs
         }
 
