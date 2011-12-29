@@ -1,7 +1,7 @@
 /**
  * 
  */
-package sim.monitor.naming;
+package sim.monitor;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -28,26 +28,14 @@ public class Domain {
 	 * 
 	 * @param domain the domain name
 	 */
-	public Domain(String domain) {
+	Domain(String domain) {
 		this.domain = domain;
-	}
-	
-	/**
-	 * Constructs a new domain with a category
-	 * 
-	 * @param domain the domain name
-	 * @param key the category type
-	 * @param value the category name
-	 */
-	public Domain(String domain, String key, String value) {
-		this.domain = domain;
-		categories.add(new DomainKey(key, value));
 	}
 
 	/*
 	 * Constructs the domain starting from an existing domain
 	 */
-	private Domain(Domain otherMonitorNaming) {
+	Domain(Domain otherMonitorNaming) {
 		this.domain = otherMonitorNaming.domain;
 		this.categories.addAll(otherMonitorNaming.categories);
 	}
@@ -66,6 +54,14 @@ public class Domain {
 		return domain;
 	}
 
+	public MonitorLongValue mLongValue(String name) {
+		return new MonitorLongValue(this, name);
+	}
+	
+	public MonitorCounter counter(String name) {
+		return new MonitorCounter(this, name);
+	}
+	
 	/**
 	 * @return the domain
 	 */

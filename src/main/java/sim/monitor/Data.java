@@ -1,22 +1,24 @@
 /**
  * 
  */
-package sim.monitor.internal.data;
+package sim.monitor;
 
 /**
  * @author val
  *
  */
-public class Data {
+public class Data<T> {
 
 	private long timestamp;
-	private DataValueType value;
+	private T value;
 	
-	public Data(long timestamp, DataValueType value) {
+	public Data() {}
+	
+	public Data(long timestamp, T value) {
 		this.timestamp = timestamp;
 		this.value = value;
 	}
-	
+
 	/**
 	 * @return the timestamp
 	 */
@@ -29,20 +31,19 @@ public class Data {
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
+
 	/**
 	 * @return the value
 	 */
-	public DataValueType getValue() {
+	public T getValue() {
 		return value;
 	}
+
 	/**
 	 * @param value the value to set
 	 */
-	public void setValue(DataValueType value) {
+	public void setValue(T value) {
 		this.value = value;
 	}
 
-	public Data clone() {
-		return new Data(timestamp, value);
-	}
 }

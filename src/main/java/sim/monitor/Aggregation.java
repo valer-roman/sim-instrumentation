@@ -1,7 +1,7 @@
 /**
  * 
  */
-package sim.monitor.internal;
+package sim.monitor;
 
 /**
  * @author val

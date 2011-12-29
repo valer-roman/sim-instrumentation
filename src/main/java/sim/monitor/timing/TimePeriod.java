@@ -23,7 +23,7 @@ public class TimePeriod {
 			this.timeMultiplier = timeMultiplier;
 		}
 		
-		public int getSeconds() {
+		public long getSeconds() {
 			return timeUnit.getSeconds() * timeMultiplier;
 		}
 	}
@@ -37,8 +37,8 @@ public class TimePeriod {
 		return this;
 	}
 	
-	public int getSeconds() {
-		int seconds = 0;
+	public long getSeconds() {
+		long seconds = 0;
 		for (TimePeriodEntry tpe : entries) {
 			seconds += tpe.getSeconds();
 		}

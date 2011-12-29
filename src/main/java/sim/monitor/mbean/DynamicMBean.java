@@ -17,8 +17,6 @@ import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.ReflectionException;
 
-import sim.monitor.internal.data.DataValueType;
-
 /**
  * @author valer
  *
@@ -55,9 +53,9 @@ public class DynamicMBean implements javax.management.DynamicMBean {
 	public AttributeList getAttributes(String[] arg0) {
        AttributeList list = new AttributeList();
         for (Entry<String, AttributeData> entry : attributes.entrySet()) {
-            DataValueType dvt = entry.getValue().getValue();
+            String dvt = entry.getValue().getValue();
             if (dvt != null) {
-            	list.add(new Attribute(entry.getKey(), dvt.getValueObject()));
+            	list.add(new Attribute(entry.getKey(), dvt));
             }
         }
         return list;
@@ -73,10 +71,10 @@ public class DynamicMBean implements javax.management.DynamicMBean {
             String name = it.next();
             AttributeData attrData = attributes.get(name);
             String description = attrData.getDescription();
-            DataValueType dvt = attrData.getValue();
+            //String dvt = attrData.getValue();
             mbAttributeInfos[i] = new MBeanAttributeInfo(
                     name,
-                    dvt.getValueTypeClassName(), //"java.lang.String",
+                    attrData.getType(), //"java.lang.String",
                     description,
                     true,   // isReadable
                     false,   // isWritable

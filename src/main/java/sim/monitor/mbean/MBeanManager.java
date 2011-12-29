@@ -4,6 +4,7 @@
 package sim.monitor.mbean;
 
 import java.lang.management.ManagementFactory;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -16,15 +17,14 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import sim.monitor.internal.data.Data;
-import sim.monitor.internal.observer.MonitorProcessorObserver;
+import sim.monitor.Data;
 import sim.monitor.naming.Name;
 
 /**
  * @author valer
  *
  */
-public class MBeanManager implements MonitorProcessorObserver {
+public class MBeanManager {
 
 	private static MBeanManager mBeanManager = new MBeanManager();
 	private MBeanServer mbServer;
@@ -38,11 +38,11 @@ public class MBeanManager implements MonitorProcessorObserver {
 	private MBeanManager() {
 		mbServer = ManagementFactory.getPlatformMBeanServer();
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see sim.monitor.internal.observer.MonitorProcessorObserver#update(sim.monitor.naming.Name, sim.monitor.internal.data.Data)
 	 */
-	public void update(Name name, Data data) {
+	public void update(Name name, Collection<Data<?>> datas) {
 		ObjectName objectName = fromMonitorName(name);
 		Set<ObjectInstance> instances = mbServer.queryMBeans(objectName, null);
 		ObjectInstance mb = null;
@@ -61,7 +61,9 @@ public class MBeanManager implements MonitorProcessorObserver {
 			//mbServer.registerMBean(object, name)MBean(mb.getObjectName());
 		}
 		//FIXME
-		dynMBean.getAttributes().put(name.getName(), new AttributeData(name.getDescription(), data.getValue()));
+		for (Data<?> data : datas) {
+			dynMBean.getAttributes().put(name.getName(), new AttributeData(name.getDescription(), data.getValue().toString(), data.getValue().getClass().getName()));
+		}
 		try {
 			mb = mbServer.registerMBean(dynMBean, objectName);
 		} catch (InstanceAlreadyExistsException e) {
@@ -75,7 +77,7 @@ public class MBeanManager implements MonitorProcessorObserver {
 			e.printStackTrace();
 		}	
 	}
-	
+
 	private ObjectName fromMonitorName(Name name) {
 		String domain = name.getDomain().getDomain();
 		Hashtable<String, String> ns = name.getDomain().getCategories();

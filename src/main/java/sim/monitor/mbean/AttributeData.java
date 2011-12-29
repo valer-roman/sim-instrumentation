@@ -3,7 +3,6 @@
  */
 package sim.monitor.mbean;
 
-import sim.monitor.internal.data.DataValueType;
 
 /**
  * @author valer
@@ -12,11 +11,13 @@ import sim.monitor.internal.data.DataValueType;
 public class AttributeData {
 
 	private String description;
-	private DataValueType value;
+	private String value;
+	private String type;
 	
-	public AttributeData(String description, DataValueType value) {
+	public AttributeData(String description, String value, String type) {
 		this.description = description;
 		this.value = value;
+		this.type = type;
 	}
 	
 	/**
@@ -35,15 +36,29 @@ public class AttributeData {
 	/**
 	 * @return the value
 	 */
-	public DataValueType getValue() {
+	public String getValue() {
 		return value;
 	}
 
 	/**
 	 * @param value the value to set
 	 */
-	public void setValue(DataValueType value) {
+	public void setValue(String value) {
 		this.value = value;
+	}
+
+	/**
+	 * @return the type
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }

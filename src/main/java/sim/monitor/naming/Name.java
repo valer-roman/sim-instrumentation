@@ -3,6 +3,8 @@
  */
 package sim.monitor.naming;
 
+import sim.monitor.Domain;
+
 /**
  * This is the full name of a monitor, the domain plus the monitor name and description
  * 

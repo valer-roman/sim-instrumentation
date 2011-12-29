@@ -1,7 +1,7 @@
 /**
  * 
  */
-package sim.monitor.naming;
+package sim.monitor;
 
 /**
  * Class used to define categories on a domain
