@@ -44,5 +44,12 @@ public class TimePeriod {
 		}
 		return seconds;
 	}
-	
+
+	public boolean lessThan(long millis) {
+		long seconds = getSeconds();
+		if (seconds < millis/1000) {
+			return true;
+		}
+		return false;
+	}
 }

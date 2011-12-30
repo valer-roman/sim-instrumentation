@@ -23,7 +23,7 @@ public class MonitorCounter extends Monitor<MonitorCounter, Long> {
 	 */
 	public MonitorCounter(Domain domain, String name) {
 		super(domain, name);
-		aggregate(Aggregation.Sum);
+		count();
 	}
 	
 	/**

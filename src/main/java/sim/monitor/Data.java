@@ -3,20 +3,38 @@
  */
 package sim.monitor;
 
+import sim.monitor.naming.Name;
+
 /**
  * @author val
  *
  */
 public class Data<T> {
 
+	private Name name;
 	private long timestamp;
 	private T value;
 	
-	public Data() {}
+	//public Data() {}
 	
-	public Data(long timestamp, T value) {
+	public Data(Name name, long timestamp, T value) {
+		this.name = name;
 		this.timestamp = timestamp;
 		this.value = value;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public Name getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(Name name) {
+		this.name = name;
 	}
 
 	/**
