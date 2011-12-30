@@ -31,8 +31,8 @@ public class Test {
 		
 		MonitorLongValue mlv = domain.mLongValue("Value Long Test")
 			.setDescription("long value test descr");
-		//mlv.sumRate(TimeUnit.Second, 1, "sum rate", "desc sum rate");
-		mlv.sumRate(TimeUnit.Second, 1);
+		mlv.sumRate(TimeUnit.Second, 1, "sum rate", "desc sum rate");
+		//mlv.sumRate(TimeUnit.Second, 1);
 		//mlv.countRate(TimeUnit.Second, 1);
 		//mlv.min();
 		//mlv.max();

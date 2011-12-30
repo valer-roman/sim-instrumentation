@@ -14,17 +14,15 @@ import sim.monitor.timing.TimeUnit;
 
 /**
  * 
- * Abstract class encapsulating all common properties and methods of a monitor.
  * A monitor is an entity used by developers that are monitoring their application to extract runtime information about business actions.
  * 
- * Each monitor is defined inside a domains and a number of categtories.
- * For example a monitor is part of the domain com.test.monitoring and the resource it is monitoring reside in the module "User Interface"
+ * Each monitor is defined inside a domains and categories. The domain and categories together form the context of the monitor.
+ * A category is represented through a key-value. The key is the type of the category and the value is the name of the category.
+ * For example a monitor could be part of the domain com.test.monitoring and the resource it is monitoring reside in the module "User Interface"
  * and in the component "Login". This can be expressed using JMX object name notation as "com.test.monitoring:module=User Interface,component=Login"
- * 
- * The monitor has a name and a description.
- * 
- * The data collected through the monitor is processed using a processor. Depending on desired monitor type a different processor is used.
- * For more information about monitor types and processors see implementations of this class.
+ * Here the categories are module=User and component=Login.
+ *  
+ * The monitor has a name and a description. Through this name it can be identified by external application using the instrumentation tool. For example a JMX server.
  * 
  * @author val
  *
@@ -47,11 +45,6 @@ public class Monitor<S extends Monitor<S, T>, T> {
 	 * The description of the monitor
 	 */
 	protected String description;
-	
-	/**
-	 * The processor used to transform the data
-	 */
-	//protected List<MonitorProcessor> processors = new ArrayList<MonitorProcessor>();
 	
 	private List<Aggregation> aggregates = new ArrayList<Aggregation>();
 	private List<Rate> rates = new ArrayList<Rate>();
@@ -78,6 +71,12 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		this.name = name;
 	}
 
+	/**
+	 * This method returns even at compile time the actual class of this object.
+	 * Used to construct the fluent api.
+	 * 
+	 * @return this
+	 */
 	@SuppressWarnings("unchecked")
 	protected final S self() {
 		return (S) this;

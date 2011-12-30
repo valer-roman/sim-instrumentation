@@ -42,10 +42,13 @@ public class MBeanManager {
 	public void update(Collection<Data<?>> datas) {
 		//FIXME
 		for (Data<?> data : datas) {
+			boolean containsAttribute = dynMBean.getAttributes().containsKey(data.getName().getName());
+			
 			ObjectName objectName = fromMonitorName(data.getName().getDomain());
 			Set<ObjectInstance> instances = mbServer.queryMBeans(objectName, null);
 			ObjectInstance mb = null;
-			if (!instances.isEmpty()) {
+			
+			if (!containsAttribute && !instances.isEmpty()) {
 				mb = instances.iterator().next();
 				try {
 					mbServer.unregisterMBean(mb.getObjectName());
@@ -60,8 +63,10 @@ public class MBeanManager {
 				//mbServer.registerMBean(object, name)MBean(mb.getObjectName());
 			}
 			
+			
 			dynMBean.getAttributes().put(data.getName().getName(), new AttributeData(data.getName().getDescription(), data.getValue().toString(), data.getValue().getClass().getName()));
 			
+			if (!containsAttribute || instances.isEmpty()) {
 			try {
 				mb = mbServer.registerMBean(dynMBean, objectName);
 			} catch (InstanceAlreadyExistsException e) {
@@ -73,7 +78,8 @@ public class MBeanManager {
 			} catch (MBeanRegistrationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
+			}
+			}
 		}
 	}
 
