@@ -3,7 +3,6 @@
  */
 package sim.monitor.naming;
 
-import sim.monitor.Domain;
 
 /**
  * This is the full name of a monitor, the domain plus the monitor name and description
@@ -12,7 +11,7 @@ import sim.monitor.Domain;
  */
 public class Name {
 
-	private Domain domain;
+	private String context;
 	private String name;
 	private String description;
 	
@@ -23,8 +22,8 @@ public class Name {
 	 * @param domain the domain
 	 * @param name the name of the monitor
 	 */
-	public Name(Domain domain, String name) {
-		this(domain, name, "");
+	public Name(String context, String name) {
+		this(context, name, "");
 	}
 	
 	/**
@@ -34,24 +33,24 @@ public class Name {
 	 * @param name the name of the monitor
 	 * @param description the description of the monitor
 	 */
-	public Name(Domain domain, String name, String description) {
-		this.domain = domain;
+	public Name(String context, String name, String description) {
+		this.context = context;
 		this.name = name;
 		this.description = description;
 	}
 
 	/**
-	 * @return the domain
+	 * @return the context
 	 */
-	public Domain getDomain() {
-		return domain;
+	public String getContext() {
+		return context;
 	}
 
 	/**
 	 * @param domain the domain to set
 	 */
-	public void setDomain(Domain domain) {
-		this.domain = domain;
+	public void setContext(String context) {
+		this.context = context;
 	}
 
 	/**

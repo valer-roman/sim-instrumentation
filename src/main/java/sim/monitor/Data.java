@@ -9,15 +9,15 @@ import sim.monitor.naming.Name;
  * @author val
  *
  */
-public class Data<T> {
+public class Data {
 
 	private Name name;
 	private long timestamp;
-	private T value;
+	private Object value;
 	
 	//public Data() {}
 	
-	public Data(Name name, long timestamp, T value) {
+	public Data(Name name, long timestamp, Object value) {
 		this.name = name;
 		this.timestamp = timestamp;
 		this.value = value;
@@ -53,14 +53,14 @@ public class Data<T> {
 	/**
 	 * @return the value
 	 */
-	public T getValue() {
+	public Object getValue() {
 		return value;
 	}
 
 	/**
 	 * @param value the value to set
 	 */
-	public void setValue(T value) {
+	public void setValue(Object value) {
 		this.value = value;
 	}
 

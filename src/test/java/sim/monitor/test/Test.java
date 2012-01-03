@@ -1,8 +1,7 @@
 package sim.monitor.test;
-import sim.monitor.Builder;
-import sim.monitor.Domain;
-import sim.monitor.MonitorCounter;
-import sim.monitor.MonitorLongValue;
+import sim.monitor.Aggregate;
+import sim.monitor.Monitor;
+import sim.monitor.Rate.Type;
 import sim.monitor.timing.TimeUnit;
 
 /**
@@ -19,19 +18,18 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		Domain domain = Builder.domain("sim.monitoring")
-			.add("type", "Testing");
+		Monitor.Creator creator = Monitor.Creator.useContext("sim.monitoring:type=Testing");
 
-		MonitorCounter counter = domain.counter("Counter test")
-			.setDescription("counter desc");
+		Monitor counter = creator.create("Counter test")
+			.setDescription("counter desc").setStatistic(Aggregate.Count);
 
 		counter.hit();
 		Thread.sleep(20);
 		counter.hit();
 		
-		MonitorLongValue mlv = domain.mLongValue("Value Long Test")
+		Monitor mlv = creator.create("Value Long Test")
 			.setDescription("long value test descr");
-		mlv.sumRate(TimeUnit.Second, 1, "sum rate", "desc sum rate");
+		mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");
 		//mlv.sumRate(TimeUnit.Second, 1);
 		//mlv.countRate(TimeUnit.Second, 1);
 		//mlv.min();

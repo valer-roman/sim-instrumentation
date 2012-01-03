@@ -5,7 +5,6 @@ package sim.monitor.mbean;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -18,7 +17,6 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
 import sim.monitor.Data;
-import sim.monitor.Domain;
 
 /**
  * @author valer
@@ -39,12 +37,21 @@ public class MBeanManager {
 		mbServer = ManagementFactory.getPlatformMBeanServer();
 	}
 	
-	public void update(Collection<Data<?>> datas) {
+	public void update(Collection<Data> datas) {
 		//FIXME
-		for (Data<?> data : datas) {
+		for (Data data : datas) {
 			boolean containsAttribute = dynMBean.getAttributes().containsKey(data.getName().getName());
 			
-			ObjectName objectName = fromMonitorName(data.getName().getDomain());
+			ObjectName objectName = null;
+			try {
+				objectName = new ObjectName(data.getName().getContext());
+			} catch (MalformedObjectNameException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (NullPointerException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			Set<ObjectInstance> instances = mbServer.queryMBeans(objectName, null);
 			ObjectInstance mb = null;
 			
@@ -83,6 +90,7 @@ public class MBeanManager {
 		}
 	}
 
+	/*
 	private ObjectName fromMonitorName(Domain domain) {
 		Hashtable<String, String> ns = domain.getCategories();
 		try {
@@ -96,4 +104,5 @@ public class MBeanManager {
 		}
 		return null;
 	}
+	*/
 }

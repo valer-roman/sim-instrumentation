@@ -2,6 +2,7 @@ package sim.monitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.LoggerFactory;
@@ -16,25 +17,22 @@ import sim.monitor.timing.TimeUnit;
  * 
  * A monitor is an entity used by developers that are monitoring their application to extract runtime information about business actions.
  * 
- * Each monitor is defined inside a domains and categories. The domain and categories together form the context of the monitor.
- * A category is represented through a key-value. The key is the type of the category and the value is the name of the category.
- * For example a monitor could be part of the domain com.test.monitoring and the resource it is monitoring reside in the module "User Interface"
- * and in the component "Login". This can be expressed using JMX object name notation as "com.test.monitoring:module=User Interface,component=Login"
- * Here the categories are module=User and component=Login.
+ * Each monitor is defined inside a context.
+ * For example a context could be "com.test.monitoring:module=User Interface,component=Login"
  *  
  * The monitor has a name and a description. Through this name it can be identified by external application using the instrumentation tool. For example a JMX server.
  * 
  * @author val
  *
  */
-public class Monitor<S extends Monitor<S, T>, T> {
+public class Monitor {
 
 	private org.slf4j.Logger logger = LoggerFactory.getLogger(Monitor.class);
 	
 	/**
-	 * The domain of the monitor 
+	 * The context of the monitor 
 	 */
-	protected Domain domain;
+	protected String context;
 	
 	/**
 	 * The name of the monitor 
@@ -46,12 +44,14 @@ public class Monitor<S extends Monitor<S, T>, T> {
 	 */
 	protected String description;
 	
+	private TimePeriod pickOutInterval;
+	private boolean delta = false;
+	
 	private List<Aggregation> aggregates = new ArrayList<Aggregation>();
 	private List<Rate> rates = new ArrayList<Rate>();
 	
 	private long startTime = 0;
 	private long lastDataTime = 0;
-	private TimePeriod pickOutInterval;
 	
 	private Number sum = null;
 	private Double average = null;
@@ -59,27 +59,64 @@ public class Monitor<S extends Monitor<S, T>, T> {
 	private Number min = null;
 	private Number max= null;
 	
-	
 	/**
-	 * Constructs a new monitor
+	 * Class used for as factory for Monitor creation.
 	 * 
-	 * @param domain the domain of the monitor
-	 * @param name the name of the monitor
+	 * @author val
+	 *
 	 */
-	Monitor(Domain domain, String name) {
-		this.domain = domain;
-		this.name = name;
+	public static class Creator {
+		/**
+		 * Default context to use when creating monitors
+		 */
+		private String defaultContext;
+		
+		private Creator(String defaultContext) {
+			this.defaultContext = defaultContext;
+		}
+		
+		/**
+		 * Using the context passed as parameter create a new instance of this class
+		 * 
+		 * @param defaultContext the default context to use whn creating monitors
+		 * @return new instance
+		 */
+		public static Creator useContext(String defaultContext) {
+			return new Creator(defaultContext);
+		}
+
+		/**
+		 * Create a new monitor having the name <code>name</code>
+		 * 
+		 * @param name the monitor name
+		 * @return
+		 */
+		public Monitor create(String name) {
+			return new Monitor(defaultContext, name); 
+		}
+
+		/**
+		 * Create a new monitor under context <code>context</code>, ignoring the default context of this creator, and with the name <code>name</code>
+		 * 
+		 * @param context the context
+		 * @param name the monitor name
+		 * @return instance of monitor
+		 */
+		public Monitor create(String context, String name) {
+			return new Monitor(context, name); 
+		}
+
 	}
 
-	/**
-	 * This method returns even at compile time the actual class of this object.
-	 * Used to construct the fluent api.
+	/*
+	 * Constructs a new monitor
 	 * 
-	 * @return this
+	 * @param context the domain of the monitor
+	 * @param name the name of the monitor
 	 */
-	@SuppressWarnings("unchecked")
-	protected final S self() {
-		return (S) this;
+	private Monitor(String context, String name) {
+		this.context = context;
+		this.name = name;
 	}
 
 	/**
@@ -88,132 +125,90 @@ public class Monitor<S extends Monitor<S, T>, T> {
 	 * @param description the description
 	 * @return the monitor
 	 */
-	public S setDescription(String description) {
+	public Monitor setDescription(String description) {
 		this.description = description;
-		return self();
+		return this;
 	}
 	
 	/**
 	 * Establishes a picking out interval on the monitors value. A new value is elected only after this interval has passed since the last value
 	 * 
-	 * @param timeUnit the time unit (seconds, minuts, hours ...)
+	 * @param timeUnit the time unit (seconds, minutes, hours ...)
 	 * @param timeMultiplier the time multiplier
 	 * @return this monitor
 	 */
-	public S pickOutInterval(TimeUnit timeUnit, int timeMultiplier) {
+	public Monitor pickOutInterval(TimeUnit timeUnit, int timeMultiplier) {
 		this.pickOutInterval = new TimePeriod(timeUnit, timeMultiplier);
-		return self();
+		return this;
 	}
 
 	/**
-	 * Calculates the average of all the received values.
-	 * The data is recorded under the name of the monitor.
+	 * Seton monitor wheter to keep the received values or to perform a delta difference on current valu and last value.
 	 * 
-	 * @return the monitor
+	 * @param delta boolean setting if delta is active or not
+	 * @return this monitor
 	 */
-	public S average() {
-		this.aggregates.add(new Aggregation(Aggregate.Average, new Name(domain, name, description)));
-		return self();
+	public Monitor setDelta(boolean delta) {
+		this.delta = delta;
+		return this;
+	}
+	
+	/**
+	 * Set if an statistic on the received values is desired instead of the raw values.
+	 * The statistic can be average, count, sum, min or max
+	 * 
+	 * @return this monitor
+	 */
+	public Monitor setStatistic(Aggregate aggregate) {
+		this.aggregates.add(new Aggregation(aggregate, new Name(context, name, description)));
+		return this;
 	}
 
 	/**
-	 * Adds the average statistic to the monitor. 
+	 * Sets on the received values a rate statistic.
+	 * The rate is calculated as sum, average or count of the values per the interval of time passed as parameter.
+	 *  
+	 * @param type the type of rate (sum, count or average)
+	 * @param rateTimeUnit the time unit
+	 * @param multiplier the time multiplier
+	 * @return this monitor
+	 */
+	public Monitor setRateStatistic(Type type, TimeUnit rateTimeUnit, int multiplier) {
+		this.rates.add(new Rate(new TimePeriod(rateTimeUnit, multiplier), type, new Name(context, name, description)));
+		return this;
+	}
+	
+	/**
+	 * Adds a new statistic to the monitor.
+	 * The statistic can be count, sum, average, min or max. 
 	 * The resulted value is recorder under a new statistic having the name passed as parameter.
 	 * 
 	 * @param name the statistic name
 	 * @param description description of statistic
+	 * @return this monitor
+	 * 
+	 * @see #setStatistic(Aggregate)
+	 */
+	public Monitor addStatistic(Aggregate aggregate, String name, String description) {
+		this.aggregates.add(new Aggregation(aggregate, new Name(context, name, description)));
+		return this;
+	}
+
+	/**
+	 * Adds a rate statistic
+	 * 
+	 * @param type
+	 * @param timeUnit
+	 * @param timeMultiplier
+	 * @param name
+	 * @param description
 	 * @return
 	 * 
-	 * @see #average()
+	 * @see #setRateStatistic(Type, TimeUnit, int)
 	 */
-	public S average(String name, String description) {
-		this.aggregates.add(new Aggregation(Aggregate.Average, new Name(domain, name, description)));
-		return self();
-	}
-
-	/**
-	 * The output value value of the monitor will be the count of how many hits it had.
-	 * No new statistic iscreated the result ata is registered under the monitor's name
-	 * 
-	 * @return the monitor
-	 */
-	public S count() {
-		this.aggregates.add(new Aggregation(Aggregate.Count, new Name(domain, name, description)));
-		return self();		
-	}
-	
-	/**
-	 * Same as {@link #count()} only that a new statistic is created with {@code name}
-	 * 
-	 * @param name the name of the statistic
-	 * @param description the description of statistic
-	 * @return the monitor
-	 * 
-	 * @see #count()
-	 */
-	public S count(String name, String description) {
-		this.aggregates.add(new Aggregation(Aggregate.Count, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S sum() {
-		this.aggregates.add(new Aggregation(Aggregate.Sum, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S sum(String name, String description) {
-		this.aggregates.add(new Aggregation(Aggregate.Sum, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S max() {
-		this.aggregates.add(new Aggregation(Aggregate.Maximum, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S max(String name, String description) {
-		this.aggregates.add(new Aggregation(Aggregate.Maximum, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S min() {
-		this.aggregates.add(new Aggregation(Aggregate.Minimum, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S min(String name, String description) {
-		this.aggregates.add(new Aggregation(Aggregate.Minimum, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S sumRate(TimeUnit timeUnit, int timeMultiplier) {
-		this.rates.add(new Rate(new TimePeriod(timeUnit, timeMultiplier), Type.sum, new Name(domain, name, description)));
-		return self();		
-	}
-	
-	public S sumRate(TimeUnit timeUnit, int timeMultiplier, String name, String description) {
-		this.rates.add(new Rate(new TimePeriod(timeUnit, timeMultiplier), Type.sum, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S countRate(TimeUnit timeUnit, int timeMultiplier) {
-		this.rates.add(new Rate(new TimePeriod(timeUnit, timeMultiplier), Type.count, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S countRate(TimeUnit timeUnit, int timeMultiplier, String name, String description) {
-		this.rates.add(new Rate(new TimePeriod(timeUnit, timeMultiplier), Type.count, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S averageRate(TimeUnit timeUnit, int timeMultiplier) {
-		this.rates.add(new Rate(new TimePeriod(timeUnit, timeMultiplier), Type.average, new Name(domain, name, description)));
-		return self();
-	}
-
-	public S averageRate(TimeUnit timeUnit, int timeMultiplier, String name, String description) {
-		this.rates.add(new Rate(new TimePeriod(timeUnit, timeMultiplier), Type.average, new Name(domain, name, description)));
-		return self();
+	public Monitor addRateStatistic(Type type, TimeUnit timeUnit, int timeMultiplier, String name, String description) {
+		this.rates.add(new Rate(new TimePeriod(timeUnit, timeMultiplier), type, new Name(context, name, description)));
+		return this;
 	}
 
 	/**
@@ -222,14 +217,44 @@ public class Monitor<S extends Monitor<S, T>, T> {
 	 * 
 	 * @param value the value registered in monitored application. Depending on monitor type can have different types (Long, Double ...)
 	 */
-	protected void hit_(T value) {
+	public void hit(Long value) {
 		long timestamp = System.currentTimeMillis();
-		Collection<Data<?>> datas = processData(timestamp, value);
+		Collection<Data> datas = processData(timestamp, value);
 		exportToMBean(datas);
 	}
-	
-	protected Collection<Data<?>> processData(long timestamp, T value) {
-		List<Data<?>> returns = new ArrayList<Data<?>>();
+
+	public void hit(Double value) {
+		long timestamp = System.currentTimeMillis();
+		Collection<Data> datas = processData(timestamp, value);
+		exportToMBean(datas);
+	}
+
+	public void hit(Integer value) {
+		long timestamp = System.currentTimeMillis();
+		Collection<Data> datas = processData(timestamp, value);
+		exportToMBean(datas);
+	}
+
+	public void hit(String value) {
+		long timestamp = System.currentTimeMillis();
+		Collection<Data> datas = processData(timestamp, value);
+		exportToMBean(datas);
+	}
+
+	public void hit(Date value) {
+		long timestamp = System.currentTimeMillis();
+		Collection<Data> datas = processData(timestamp, value);
+		exportToMBean(datas);
+	}
+
+	public void hit() {
+		long timestamp = System.currentTimeMillis();
+		Collection<Data> datas = processData(timestamp, new Long(1));
+		exportToMBean(datas);
+	}
+
+	protected Collection<Data> processData(long timestamp, Object value) {
+		List<Data> returns = new ArrayList<Data>();
 
 		if (startTime == 0) {
 			startTime = timestamp;
@@ -244,7 +269,7 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		}
 		
 		if (!namedContains(this.name)) {
-			returns.add(new Data<T>(new Name(domain, name, description), timestamp, value));
+			returns.add(new Data(new Name(context, name, description), timestamp, value));
 		}
 		
 		if (aggregatesContainsType(Aggregate.Sum) || aggregatesContainsType(Aggregate.Average) || 
@@ -263,7 +288,7 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		return returns;
 	}
 	
-	private void exportToMBean(Collection<Data<?>> datas) {
+	private void exportToMBean(Collection<Data> datas) {
 		if (datas.isEmpty()) {
 			return;
 		}
@@ -271,37 +296,37 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		mBeanManager.update(datas);
 	}
 
-	protected Collection<Data<?>> processAggregates(long timestamp, T value) {
-		List<Data<?>> returns = new ArrayList<Data<?>>();
+	protected Collection<Data> processAggregates(long timestamp, Object value) {
+		List<Data> returns = new ArrayList<Data>();
 		
 		for (Aggregation aggregation : this.aggregates) {
 			switch (aggregation.getAggregate()) {
 			case Sum :
 				if (this.sum != null) {
-					returns.add(new Data<Number>(aggregation.getName(), timestamp, this.sum));
+					returns.add(new Data(aggregation.getName(), timestamp, this.sum));
 				}
 				break;
 			case Count :
 				if (this.count != null) {
-					returns.add(new Data<Number>(aggregation.getName(), timestamp, this.count));
+					returns.add(new Data(aggregation.getName(), timestamp, this.count));
 				}
 				break;
 			case Average :
 				this.average = computeAverage();
 				if (this.average != null) {
-					returns.add(new Data<Number>(aggregation.getName(), timestamp, this.average));
+					returns.add(new Data(aggregation.getName(), timestamp, this.average));
 				}
 				break;
 			case Maximum :
 				max(value);
 				if (this.max != null) {
-					returns.add(new Data<Number>(aggregation.getName(), timestamp, this.max));
+					returns.add(new Data(aggregation.getName(), timestamp, this.max));
 				}
 				break;
 			case Minimum :
 				min(value);
 				if (this.min != null) {
-					returns.add(new Data<Number>(aggregation.getName(), timestamp, this.min));
+					returns.add(new Data(aggregation.getName(), timestamp, this.min));
 				}
 				break;
 			}
@@ -310,7 +335,7 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		return returns;
 	}
 	
-	protected void sum(T value) {
+	protected void sum(Object value) {
 		if (!(value instanceof Number)) {
 			return;
 		}
@@ -322,7 +347,7 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		}
 	}
 	
-	protected void count(T value) {
+	protected void count(Object value) {
 		if (count == null) {
 			count = new Long(0);
 		}
@@ -336,7 +361,7 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		return null;
 	}
 	
-	protected void max(T value) {
+	protected void max(Object value) {
 		if (!(value instanceof Number)) {
 			return;
 		}
@@ -350,7 +375,7 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		}
 	}
 
-	protected void min(T value) {
+	protected void min(Object value) {
 		if (!(value instanceof Number)) {
 			return;
 		}
@@ -364,8 +389,8 @@ public class Monitor<S extends Monitor<S, T>, T> {
 		}
 	}
 
-	protected Collection<Data<?>> processRates(long timestamp, T value) {
-		List<Data<?>> returns = new ArrayList<Data<?>>();
+	protected Collection<Data> processRates(long timestamp, Object value) {
+		List<Data> returns = new ArrayList<Data>();
 		
 		long timeDiff = timestamp - startTime;
 		for (Rate rate : rates) {
@@ -385,11 +410,11 @@ public class Monitor<S extends Monitor<S, T>, T> {
 					rateValue = ((Double) sum) * partialRate;
 				}
 				logger.debug("rate:" + rateValue);
-				returns.add(new Data<Double>(rate.getName(), timestamp, rateValue));
+				returns.add(new Data(rate.getName(), timestamp, rateValue));
 				break;
 			case count :
 				rateValue = ((Long) count) * partialRate;
-				returns.add(new Data<Double>(rate.getName(), timestamp, rateValue));
+				returns.add(new Data(rate.getName(), timestamp, rateValue));
 				break;
 			case average :
 				if (sum instanceof Long) {
@@ -397,7 +422,7 @@ public class Monitor<S extends Monitor<S, T>, T> {
 				} else if (sum instanceof Double) {
 					rateValue = (((Double) sum)/this.count) * partialRate;
 				}
-				returns.add(new Data<Double>(rate.getName(), timestamp, rateValue));
+				returns.add(new Data(rate.getName(), timestamp, rateValue));
 				break;
 			}
 		}
