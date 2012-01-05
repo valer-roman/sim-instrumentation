@@ -11,10 +11,10 @@ package sim.monitor.naming;
  */
 public class Name {
 
-	private String context;
+	private Container container;
 	private String name;
 	private String description;
-	
+
 	/**
 	 * Constructs a new monitor name
 	 * The description here is the empty string
@@ -22,10 +22,10 @@ public class Name {
 	 * @param domain the domain
 	 * @param name the name of the monitor
 	 */
-	public Name(String context, String name) {
+	public Name(Container context, String name) {
 		this(context, name, "");
 	}
-	
+
 	/**
 	 * Constructs a monitor name
 	 * 
@@ -33,24 +33,24 @@ public class Name {
 	 * @param name the name of the monitor
 	 * @param description the description of the monitor
 	 */
-	public Name(String context, String name, String description) {
-		this.context = context;
+	public Name(Container container, String name, String description) {
+		this.container = container;
 		this.name = name;
 		this.description = description;
 	}
 
 	/**
-	 * @return the context
+	 * @return the container
 	 */
-	public String getContext() {
-		return context;
+	public Container getContainer() {
+		return container;
 	}
 
 	/**
 	 * @param domain the domain to set
 	 */
-	public void setContext(String context) {
-		this.context = context;
+	public void setContainer(Container context) {
+		this.container = context;
 	}
 
 	/**

@@ -12,17 +12,13 @@ import sim.monitor.timing.TimePeriod;
  */
 public class Rate extends Statistic {
 
-	public enum Type {
-		sum, count, average;
-	}
-	
 	private TimePeriod rateTime;
-	private Type type;
-	
-	public Rate(TimePeriod rateTime, Type type, Name name) {
+	private Aggregate aggregate;
+
+	public Rate(TimePeriod rateTime, Aggregate aggregate, Name name) {
 		super(name);
 		this.rateTime = rateTime;
-		this.type = type;
+		this.aggregate = aggregate;
 	}
 
 	/**
@@ -40,17 +36,18 @@ public class Rate extends Statistic {
 	}
 
 	/**
-	 * @return the type
+	 * @return the aggregate
 	 */
-	public Type getType() {
-		return type;
+	public Aggregate getAggregate() {
+		return aggregate;
 	}
 
 	/**
-	 * @param type the type to set
+	 * @param aggregate
+	 *            the aggregate to set
 	 */
-	public void setType(Type type) {
-		this.type = type;
+	public void setAggregate(Aggregate aggregate) {
+		this.aggregate = aggregate;
 	}
 
 }

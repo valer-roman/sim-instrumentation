@@ -1,7 +1,7 @@
 package sim.monitor.test;
 import sim.monitor.Aggregate;
 import sim.monitor.Monitor;
-import sim.monitor.Rate.Type;
+import sim.monitor.MonitorBuilder;
 import sim.monitor.timing.TimeUnit;
 
 /**
@@ -18,19 +18,28 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		Monitor.Creator creator = Monitor.Creator.useContext("sim.monitoring:type=Testing");
-
-		Monitor counter = creator.create("Counter test")
-			.setDescription("counter desc").setStatistic(Aggregate.Count);
+		/*
+		 * Monitor monitor =
+		 * MonitorBuilder.useCategory("sim.monitoring:type=Testing")
+		 * .setPickoutInterval(TimeUnit, int) .addDefaultStatistic(Sum)
+		 * //.addDefaultRateStatistic(Sum, TimeUnit, int) . .build(name,
+		 * description);
+		 */
+		String container = "sim.monitoring:type=Testing";
+		Monitor counter = MonitorBuilder
+				.inContainer(container)
+				.addStatistic(Aggregate.Count)
+				.build("Counter test", "counter desc");
 
 		counter.hit();
 		Thread.sleep(20);
 		counter.hit();
-		
-		Monitor mlv = creator.create("Value Long Test")
-			.setDescription("long value test descr");
-		mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");
-		//mlv.sumRate(TimeUnit.Second, 1);
+
+		Monitor mlv = MonitorBuilder.inContainer(container)
+				.addRate(Aggregate.Sum, TimeUnit.Second, 1)
+				.build("Value Long Test", "long value test descr");
+		//mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");
+		// mlv.setRateStatistic(Type.sum, TimeUnit.Second, 1);
 		//mlv.countRate(TimeUnit.Second, 1);
 		//mlv.min();
 		//mlv.max();
@@ -41,9 +50,9 @@ public class Test {
 		mlv.hit(new Long(30));
 		Thread.sleep(1000);
 		mlv.hit(new Long(1));
-		
+
 		Thread.sleep(1000);
-		
+
 		/*
 		MonitorCounter counter = new MonitorCounter(domain, "Counter test", "counter desc");
 		counter.addRate(new TimePeriod(TimeUnit.Second, 5), "Rate test", "rate description");
@@ -52,7 +61,7 @@ public class Test {
 			Thread.sleep(20);
 		} catch (InterruptedException e) {}
 		counter.hit();
-		
+
 		MonitorDoubleValue mdv = new MonitorDoubleValue(domain, "Double Value Testing", "description");
 		mdv.hit(2.45);
 
@@ -62,7 +71,7 @@ public class Test {
 		MonitorDoubleDelta mdd = new MonitorDoubleDelta(domain, "Double Delta Testing", "descr. double delta testing");
 		mdd.hit(3.5);
 		mdd.hit(4.7);
-		*/
+		 */
 	}
 
 }

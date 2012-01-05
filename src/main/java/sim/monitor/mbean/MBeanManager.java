@@ -5,6 +5,8 @@ package sim.monitor.mbean;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -17,6 +19,7 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
 import sim.monitor.Data;
+import sim.monitor.naming.Container;
 
 /**
  * @author valer
@@ -27,7 +30,8 @@ public class MBeanManager {
 	private static MBeanManager mBeanManager = new MBeanManager();
 	private MBeanServer mbServer;
 	
-	private DynamicMBean dynMBean = new DynamicMBean();
+	private Map<Container, DynamicMBean> mbeans = new HashMap<Container, DynamicMBean>();
+	//private DynamicMBean dynMBean = new DynamicMBean();
 	
 	public static MBeanManager instance() {
 		return mBeanManager;
@@ -40,11 +44,18 @@ public class MBeanManager {
 	public void update(Collection<Data> datas) {
 		//FIXME
 		for (Data data : datas) {
+			DynamicMBean dynMBean = null;
+			if (!mbeans.containsKey(data.getName().getContainer())) {
+				dynMBean = new DynamicMBean();
+				mbeans.put(data.getName().getContainer(), dynMBean);
+			} else {
+				dynMBean = mbeans.get(data.getName().getContainer());
+			}
 			boolean containsAttribute = dynMBean.getAttributes().containsKey(data.getName().getName());
 			
 			ObjectName objectName = null;
 			try {
-				objectName = new ObjectName(data.getName().getContext());
+				objectName = new ObjectName(data.getName().getContainer().toString());
 			} catch (MalformedObjectNameException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

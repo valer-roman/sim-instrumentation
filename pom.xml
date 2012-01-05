@@ -5,4 +5,11 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>sim.instrumentation</name>
   <description>dsgfsggdf</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.apache.commons</groupId>
+  		<artifactId>commons-lang3</artifactId>
+  		<version>3.1</version>
+  	</dependency>
+  </dependencies>
 </project>
