@@ -1,5 +1,5 @@
 /**
- * 
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
  */
 package sim.monitor.naming;
 
@@ -11,19 +11,24 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
- * @author valer
- *
+ * A container is used to group monitors.
+ * 
+ * Monitors doing different measurements on the same application resource should
+ * be place on the same container. The container is a substitute, in the
+ * instrumentation tool, for the monitored resource.
+ * 
+ * @author val
  */
 public class Container {
 
 	private String domain;
 	private Map<String, String> keys = new HashMap<String, String>();
-	
+
 	private Container(String domain, Map<String, String> keys) {
 		this.domain = domain;
 		this.keys = keys;
 	}
-	
+
 	public static Container parse(String container) {
 		int indexOfColon = container.indexOf(":");
 		if (indexOfColon == -1) {
@@ -95,16 +100,16 @@ public class Container {
 		for (String key : getKeys().keySet()) {
 			hcb.append(key).append(keys.get(key));
 		}
-		return new HashCodeBuilder().hashCode();
+		return hcb.hashCode();
 	}
-	
+
 	private String keysToString() {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for (String key : getKeys().keySet()) {
 			if (first) {
 				first = false;
-			} else { 
+			} else {
 				sb.append(",");
 			}
 			sb.append(key).append("=").append(keys.get(key));

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package sim.monitor.mbean;
+package sim.monitor.subscribers.mbean;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
@@ -20,29 +20,24 @@ import javax.management.ObjectName;
 
 import sim.monitor.Data;
 import sim.monitor.naming.Container;
+import sim.monitor.subscribers.Subscriber;
 
 /**
  * @author valer
  *
  */
-public class MBeanManager {
+public class MBeanManager implements Subscriber {
 
-	private static MBeanManager mBeanManager = new MBeanManager();
 	private MBeanServer mbServer;
-	
-	private Map<Container, DynamicMBean> mbeans = new HashMap<Container, DynamicMBean>();
+
+	private static Map<Container, DynamicMBean> mbeans = new HashMap<Container, DynamicMBean>();
 	//private DynamicMBean dynMBean = new DynamicMBean();
-	
-	public static MBeanManager instance() {
-		return mBeanManager;
-	}
-	
-	private MBeanManager() {
+
+	public MBeanManager() {
 		mbServer = ManagementFactory.getPlatformMBeanServer();
 	}
-	
+
 	public void update(Collection<Data> datas) {
-		//FIXME
 		for (Data data : datas) {
 			DynamicMBean dynMBean = null;
 			if (!mbeans.containsKey(data.getName().getContainer())) {
@@ -52,7 +47,7 @@ public class MBeanManager {
 				dynMBean = mbeans.get(data.getName().getContainer());
 			}
 			boolean containsAttribute = dynMBean.getAttributes().containsKey(data.getName().getName());
-			
+
 			ObjectName objectName = null;
 			try {
 				objectName = new ObjectName(data.getName().getContainer().toString());
@@ -65,7 +60,7 @@ public class MBeanManager {
 			}
 			Set<ObjectInstance> instances = mbServer.queryMBeans(objectName, null);
 			ObjectInstance mb = null;
-			
+
 			if (!containsAttribute && !instances.isEmpty()) {
 				mb = instances.iterator().next();
 				try {
@@ -80,23 +75,23 @@ public class MBeanManager {
 				//mbServer.unregisterMBean(mb.getObjectName());
 				//mbServer.registerMBean(object, name)MBean(mb.getObjectName());
 			}
-			
-			
+
+
 			dynMBean.getAttributes().put(data.getName().getName(), new AttributeData(data.getName().getDescription(), data.getValue().toString(), data.getValue().getClass().getName()));
-			
+
 			if (!containsAttribute || instances.isEmpty()) {
-			try {
-				mb = mbServer.registerMBean(dynMBean, objectName);
-			} catch (InstanceAlreadyExistsException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NotCompliantMBeanException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (MBeanRegistrationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				try {
+					mb = mbServer.registerMBean(dynMBean, objectName);
+				} catch (InstanceAlreadyExistsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NotCompliantMBeanException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (MBeanRegistrationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -115,5 +110,5 @@ public class MBeanManager {
 		}
 		return null;
 	}
-	*/
+	 */
 }

@@ -1,9 +1,11 @@
 /**
- * 
+ * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
  */
 package sim.monitor;
 
 import sim.monitor.naming.Container;
+import sim.monitor.processing.HitProcessor;
+import sim.monitor.publishers.Aggregate;
 import sim.monitor.timing.TimeUnit;
 
 /**
@@ -24,9 +26,9 @@ public class MonitorBuilder {
 	private Container container;
 
 	/*
-	 * instance of monitor populated by calls to each factory methods
+	 * instance of monitor core populated by calls to each factory methods
 	 */
-	private Monitor monitor;
+	private MonitorCore monitorCore;
 
 	/*
 	 * monitor factory constructor
@@ -35,7 +37,7 @@ public class MonitorBuilder {
 	 */
 	private MonitorBuilder(Container container) {
 		this.container = container;
-		this.monitor = new Monitor(this.container);
+		this.monitorCore = new MonitorCore(this.container);
 	}
 
 	/**
@@ -61,7 +63,7 @@ public class MonitorBuilder {
 	 */
 	public MonitorBuilder applyTimeIntervalSampler(TimeUnit timeUnit,
 			int multiplier) {
-		this.monitor.setTimeIntervalSampler(timeUnit, multiplier);
+		this.monitorCore.useTimeIntervalSampler(timeUnit, multiplier);
 		return this;
 	}
 
@@ -74,8 +76,8 @@ public class MonitorBuilder {
 	 *            true if delta computation is desired. False is default.
 	 * @return this
 	 */
-	public MonitorBuilder applyDelta(boolean delta) {
-		this.monitor.useDelta(delta);
+	public MonitorBuilder applyDelta() {
+		this.monitorCore.useDelta();
 		return this;
 	}
 
@@ -87,7 +89,7 @@ public class MonitorBuilder {
 	 * @return this
 	 */
 	public MonitorBuilder addStatistic(Aggregate aggregate) {
-		this.monitor.addStatistic(aggregate);
+		this.monitorCore.addStatistic(aggregate);
 		return this;
 	}
 
@@ -121,7 +123,7 @@ public class MonitorBuilder {
 	 */
 	public MonitorBuilder addRate(Aggregate aggregate, TimeUnit timeUnit,
 			int multiplier) {
-		this.monitor.addRateStatistic(aggregate, timeUnit, multiplier);
+		this.monitorCore.addRateStatistic(aggregate, timeUnit, multiplier);
 		return this;
 	}
 
@@ -146,21 +148,45 @@ public class MonitorBuilder {
 		return this;
 	}
 
+	public MonitorBuilder publishRawValues(boolean publishedRawValues) {
+		this.monitorCore.setRawValuesPublished(publishedRawValues);
+		return this;
+	}
+
 	/**
 	 * Build a monitor instance with the name passed as parameter. The monitor
 	 * will have all the properties which were set on the builder before calling
 	 * this method.
 	 * 
+	 * The name and description will be used to publish the raw values or the
+	 * statistics without a specific publication name.
+	 * 
 	 * @param name
 	 *            the name of the monitor
 	 * @param description
 	 *            the description of the monitor
-	 * @return this
+	 * @return monitor
 	 */
 	public Monitor build(String name, String description) {
-		this.monitor.setName(name);
-		this.monitor.setDescription(description);
-		return this.monitor;
+		this.monitorCore.setName(name);
+		this.monitorCore.setDescription(description);
+		if (this.monitorCore.arePublishedRawValues()) {
+			this.monitorCore.publishRawValues();
+		}
+		HitProcessor.instance().acceptMonitor(monitorCore);
+		return this.monitorCore.getMonitor();
+	}
+
+	/**
+	 * Like the method {@link #build(String, String)} except tha tno publication
+	 * name or description is given. This means that, except if there are
+	 * statistics with publication name, nothing will be published.
+	 * 
+	 * @return monitor
+	 */
+	public Monitor build() {
+		HitProcessor.instance().acceptMonitor(monitorCore);
+		return this.monitorCore.getMonitor();
 	}
 
 	/**

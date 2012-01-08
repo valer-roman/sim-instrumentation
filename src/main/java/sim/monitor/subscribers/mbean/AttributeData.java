@@ -1,7 +1,7 @@
 /**
  * 
  */
-package sim.monitor.mbean;
+package sim.monitor.subscribers.mbean;
 
 
 /**

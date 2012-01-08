@@ -1,7 +1,7 @@
 /**
  * 
  */
-package sim.monitor.mbean;
+package sim.monitor.subscribers.mbean;
 
 import java.util.HashMap;
 import java.util.Iterator;

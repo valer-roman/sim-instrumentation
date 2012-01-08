@@ -1,7 +1,8 @@
 package sim.monitor.test;
-import sim.monitor.Aggregate;
+
 import sim.monitor.Monitor;
 import sim.monitor.MonitorBuilder;
+import sim.monitor.publishers.Aggregate;
 import sim.monitor.timing.TimeUnit;
 
 /**
@@ -18,6 +19,8 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) throws InterruptedException {
+		String container = "sim.monitoring:type=Testing";
+
 		/*
 		 * Monitor monitor =
 		 * MonitorBuilder.useCategory("sim.monitoring:type=Testing")
@@ -25,10 +28,11 @@ public class Test {
 		 * //.addDefaultRateStatistic(Sum, TimeUnit, int) . .build(name,
 		 * description);
 		 */
-		String container = "sim.monitoring:type=Testing";
+
 		Monitor counter = MonitorBuilder
 				.inContainer(container)
 				.addStatistic(Aggregate.Count)
+				.publishRawValues(false)
 				.build("Counter test", "counter desc");
 
 		counter.hit();
@@ -37,6 +41,7 @@ public class Test {
 
 		Monitor mlv = MonitorBuilder.inContainer(container)
 				.addRate(Aggregate.Sum, TimeUnit.Second, 1)
+				.applyDelta()
 				.build("Value Long Test", "long value test descr");
 		//mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");
 		// mlv.setRateStatistic(Type.sum, TimeUnit.Second, 1);
