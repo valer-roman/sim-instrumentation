@@ -29,11 +29,32 @@ public class Test {
 		 * description);
 		 */
 
+		/*
+		Builder.Monitor("Counter")
+			.description("This is a counter")
+			.tags()
+				.add("Backend")
+				.add("Ordering")
+			.transformers()
+				.addDelta()
+				.add(Class<? extends Transformer>)
+			.statistics()
+				.addCount()
+				.addAverage("Average")
+					.description("The average")
+				.add(Class)
+			.build();
+
+		T instance = Builder.tag("sadsad").tag("sasda");
+
+		c.hit();
+		 */
+
 		Monitor counter = MonitorBuilder
-				.inContainer(container)
-				.addStatistic(Aggregate.Count)
-				.publishRawValues(false)
-				.build("Counter test", "counter desc");
+		.inContainer(container)
+		.addStatistic(Aggregate.Count)
+		.publishRawValues(false)
+		.build("Counter test", "counter desc");
 
 		counter.hit();
 		Thread.sleep(20);

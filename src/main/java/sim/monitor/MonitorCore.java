@@ -82,6 +82,7 @@ public class MonitorCore {
 		if (this.name == null) {
 			return;
 		}
+		// FIXME instead pass the monitor instance to the publisher
 		for (Publisher statistic : statistics) {
 			if (statistic.getName().getName() == null) {
 				statistic.setName(new Name(statistic.getName().getContainer(),

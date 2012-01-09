@@ -1,1 +1,1 @@
-sim.monitor.subscribers.mbean.MBeanManager	#MBean subscriber
+sim.monitor.subscribers.mbean.MBeanSubscriber	#MBean subscriber

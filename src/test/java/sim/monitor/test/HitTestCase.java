@@ -47,12 +47,13 @@ public class HitTestCase extends TestCase {
 					break;
 				}
 				waitingTurns++;
-			}
-			sleep(100);
-			// check again after a ilttle sleep that threads are still
-			// waiting (we make sure that all hits were processed)
-			if (HitProcessor.instance().allThreadsWaiting()) {
-				break;
+			} else {
+				sleep(100);
+				// check again after a little sleep that threads are still
+				// waiting (we make sure that all hits were processed)
+				if (HitProcessor.instance().allThreadsWaiting()) {
+					break;
+				}
 			}
 		}
 	}
@@ -84,6 +85,37 @@ public class HitTestCase extends TestCase {
 			assertEquals(i,
 					((Integer) MockSubscriber.instance.values.get(i))
 					.intValue());
+		}
+
+	}
+
+	public void testDeltaTransformerMonitor() {
+		Monitor valueMonitor = MonitorBuilder
+				.inContainer(container)
+				.applyDelta()
+				.build("Value Monitor",
+						"Make a delta out of values and publish");
+
+		for (int i = 0; i < 100; i++) {
+			valueMonitor.hit(new Integer(i));
+		}
+
+		checkHitThreadsDone();
+
+		assertNotNull(MockSubscriber.instance);
+		assertTrue(MockSubscriber.instance.values.size() > 0);
+		for (int i = 0; i < 100; i++) {
+			assertEquals(Integer.class, MockSubscriber.instance.values.get(i)
+					.getClass());
+			if (i == 0) {
+				assertEquals(0,
+						((Integer) MockSubscriber.instance.values.get(i))
+						.intValue());
+			} else {
+				assertEquals(1,
+						((Integer) MockSubscriber.instance.values.get(i))
+						.intValue());
+			}
 		}
 
 	}
