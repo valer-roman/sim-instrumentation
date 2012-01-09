@@ -62,12 +62,12 @@ public class HitTestCase extends TestCase {
 					break;
 				}
 				waitingTurns++;
-				sleep(100);
-				// check again after a ilttle sleep that threads are still
-				// waiting (we make sure that all hits were processed)
-				if (HitProcessor.instance().allThreadsWaiting()) {
-					break;
-				}
+			}
+			sleep(100);
+			// check again after a ilttle sleep that threads are still
+			// waiting (we make sure that all hits were processed)
+			if (HitProcessor.instance().allThreadsWaiting()) {
+				break;
 			}
 		}
 	}
