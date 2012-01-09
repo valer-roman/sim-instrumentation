@@ -51,15 +51,24 @@ public class HitTestCase extends TestCase {
 
 	private void checkHitThreadsDone() {
 		sleep(100);
+		String failMessage = "Was waiting for all threads to finish in a reasonable amount of time. Failing task because of overtime!";
 		int waitingTurns = 0;
-		while (!HitProcessor.instance().allThreadsWaiting()) {
-			if (waitingTurns == 10) {
-				fail("Was waiting for all threads to finish in a reasonable amount of time. Failing task because of overtime!");
+		while (true) {
+			if (!HitProcessor.instance().allThreadsWaiting()) {
+				if (waitingTurns == 10) {
+					fail(failMessage);
+				}
+				if (!sleep(100)) {
+					break;
+				}
+				waitingTurns++;
+				sleep(100);
+				// check again after a ilttle sleep that threads are still
+				// waiting (we make sure that all hits were processed)
+				if (HitProcessor.instance().allThreadsWaiting()) {
+					break;
+				}
 			}
-			if (!sleep(100)) {
-				break;
-			}
-			waitingTurns++;
 		}
 	}
 
