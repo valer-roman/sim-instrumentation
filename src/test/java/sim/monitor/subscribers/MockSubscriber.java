@@ -3,7 +3,9 @@
  */
 package sim.monitor.subscribers;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import sim.monitor.Data;
 
@@ -15,7 +17,7 @@ public class MockSubscriber implements Subscriber {
 
 	public static MockSubscriber instance;
 
-	public Object value;
+	public List<Object> values = new ArrayList<Object>();
 
 	public MockSubscriber() {
 		MockSubscriber.instance = this;
@@ -27,7 +29,9 @@ public class MockSubscriber implements Subscriber {
 	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection)
 	 */
 	public void update(Collection<Data> datas) {
-		value = datas.iterator().next().getValue();
+		Data data = datas.iterator().next();
+		System.out.println(data.getValue().getClass());
+		values.add(data.getValue());
 	}
 
 }

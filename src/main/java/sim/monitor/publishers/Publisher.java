@@ -4,11 +4,10 @@
 package sim.monitor.publishers;
 
 import java.util.Collection;
-import java.util.ServiceLoader;
 
 import sim.monitor.Data;
 import sim.monitor.naming.Name;
-import sim.monitor.subscribers.Subscriber;
+import sim.monitor.subscribers.SubscribeUpdater;
 
 /**
  * @author val
@@ -54,11 +53,7 @@ public abstract class Publisher {
 
 	public void hit(Collection<Data> datas) {
 		Collection<Data> newDatas = processHit(datas);
-		ServiceLoader<Subscriber> subscribers = ServiceLoader
-				.load(Subscriber.class);
-		for (Subscriber s : subscribers) {
-			s.update(newDatas);
-		}
+		SubscribeUpdater.instance().updateAllSubscribers(newDatas);
 	}
 
 	protected abstract Collection<Data> processHit(Collection<Data> datas);

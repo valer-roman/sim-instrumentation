@@ -9,12 +9,15 @@ import sim.monitor.MonitorBuilder;
 import sim.monitor.processing.HitProcessor;
 import sim.monitor.publishers.Aggregate;
 import sim.monitor.subscribers.MockSubscriber;
+import sim.monitor.subscribers.SubscribeUpdater;
 
 /**
  * @author val
  *
  */
 public class HitTestCase extends TestCase {
+
+	private String container = "com.test.hits:type=Counter";
 
 	public HitTestCase() {
 		super("Hit tests");
@@ -27,26 +30,8 @@ public class HitTestCase extends TestCase {
 	 */
 	@Override
 	protected void setUp() throws Exception {
-		// ClassLoader.getSystemClassLoader().getResourceAsStream(name)
+		SubscribeUpdater.instance().reloadSubscribers();
 		super.setUp();
-	}
-
-	public void testCounterHit() {
-		Monitor monitor = MonitorBuilder
-				.inContainer("com.test.hits:type=Counter")
-				.addStatistic(Aggregate.Count).publishRawValues(false)
-				.build("Counter", "Counts the hits on this monitor");
-
-		for (int i = 0; i < 10; i++) {
-			monitor.hit();
-		}
-
-		checkHitThreadsDone();
-
-		assertNotNull(MockSubscriber.instance);
-		assertNotNull(MockSubscriber.instance.value);
-		assertEquals(Long.class, MockSubscriber.instance.value.getClass());
-		assertEquals(10, ((Long) MockSubscriber.instance.value).longValue());
 	}
 
 	private void checkHitThreadsDone() {
@@ -80,4 +65,48 @@ public class HitTestCase extends TestCase {
 		}
 		return true;
 	}
+
+	public void testSimpleValueMonitor() {
+		Monitor valueMonitor = MonitorBuilder.inContainer(container)
+				.build("Value Monitor", "Just publish the value received in hits");
+
+		for (int i = 0; i < 100; i++) {
+			valueMonitor.hit(new Integer(i));
+		}
+
+		checkHitThreadsDone();
+
+		assertNotNull(MockSubscriber.instance);
+		assertTrue(MockSubscriber.instance.values.size() > 0);
+		for (int i = 0; i < 100; i++) {
+			assertEquals(Integer.class, MockSubscriber.instance.values.get(i)
+					.getClass());
+			assertEquals(i,
+					((Integer) MockSubscriber.instance.values.get(i))
+					.intValue());
+		}
+
+	}
+
+	public void testCounterHit() {
+		Monitor monitor = MonitorBuilder.inContainer(container)
+				.addStatistic(Aggregate.Count).publishRawValues(false)
+				.build("Counter", "Counts the hits on this monitor");
+
+		for (int i = 0; i < 10; i++) {
+			monitor.hit();
+		}
+
+		checkHitThreadsDone();
+
+		assertNotNull(MockSubscriber.instance);
+		assertTrue(MockSubscriber.instance.values.size() > 0);
+		for (int i = 0; i < 10; i++) {
+			assertEquals(Long.class, MockSubscriber.instance.values.get(i)
+					.getClass());
+			assertEquals((i + 1),
+					((Long) MockSubscriber.instance.values.get(i)).longValue());
+		}
+	}
+
 }
