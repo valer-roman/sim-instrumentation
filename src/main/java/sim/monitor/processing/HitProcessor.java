@@ -43,4 +43,18 @@ public class HitProcessor {
 		                                         % this.availableProcessors];
 		hitTask.signalHit(monitor);
 	}
+
+	/**
+	 * This is for tests, to check that threads are in waiting state
+	 * 
+	 * @return true if all threads are waiting
+	 */
+	public boolean allThreadsWaiting() {
+		for (HitProcessorTask hpt : hitTasks) {
+			if (!hpt.isWaiting()) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

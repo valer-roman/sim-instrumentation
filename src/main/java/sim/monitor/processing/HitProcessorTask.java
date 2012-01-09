@@ -81,4 +81,7 @@ public class HitProcessorTask extends Thread {
 		}
 	}
 
+	boolean isWaiting() {
+		return waiting.get();
+	}
 }
