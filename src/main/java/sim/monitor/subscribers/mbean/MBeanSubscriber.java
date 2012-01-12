@@ -69,8 +69,11 @@ public class MBeanSubscriber implements Subscriber {
 	 * 
 	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection,
 	 * sim.monitor.Tags, java.lang.String, java.lang.String)
+	 * 
+	 * FIXME maybe we could avoid somehow the synchronized ...
 	 */
-	public void update(Collection<Hit> hits, Tags tags, String name,
+	public synchronized void update(Collection<Hit> hits, Tags tags,
+			String name,
 			String description) {
 		logger.info("updating mbean for attribute " + name);
 		for (Hit hit : hits) {

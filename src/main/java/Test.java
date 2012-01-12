@@ -60,8 +60,11 @@ public class Test {
 
 		Monitor mlv = Builder.Monitor("Value Long Test")
 				.description("long value test descr").tags().add("testing")
-				.filters().addDelta().rates().addAverage()
-				.add(TimeUnit.Second, 1).publishAggregate().build();
+				.filters()
+				// .addDelta()
+				.rates().addAverage()
+				.add(TimeUnit.Second, 1).description("Rate 1 sec.")
+				.publishAggregate().build();
 		//mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");
 		// mlv.setRateStatistic(Type.sum, TimeUnit.Second, 1);
 		//mlv.countRate(TimeUnit.Second, 1);
@@ -70,7 +73,7 @@ public class Test {
 		mlv.hit(new Long(2));
 		// Thread.sleep(1000);
 		mlv.hit(new Long(8));
-		// Thread.sleep(1000);
+		Thread.sleep(1001);
 		mlv.hit(new Long(30));
 		// Thread.sleep(1000);
 		mlv.hit(new Long(5));

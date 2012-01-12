@@ -92,13 +92,16 @@ public class Rate extends Publisher {
 			if (lastTimestampMark == 0) {
 				lastTimestampMark = hit.getTimestamp();
 			}
+			if ((hit.getTimestamp() - lastTimestampMark) > rateTimeInMillis) {
+				System.out.println("RESET");
+				lastTimestampMark = lastTimestampMark + rateTimeInMillis;
+				// this.timestamps.add(timestamp);
+				count = new Long(0);
+				sum = new Long(0);
+				result = new Long(0);
+				// continue;
+			}
 			long timestamp = lastTimestampMark + rateTimeInMillis;
-			//			if ((hit.getTimestamp() - lastTimestampMark) > rateTimeInMillis) {
-			//				lastTimestampMark = timestamp;
-			//				this.timestamps.add(timestamp);
-			//				result = new Long(0);
-			//				continue;
-			//			}
 			if (aggregation instanceof Sum) {
 				result = MeasureUtil.sum(result, hit.getValue());
 			} else if (aggregation instanceof Sum) {
