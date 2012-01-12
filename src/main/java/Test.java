@@ -1,8 +1,7 @@
 
 
+import sim.monitor.Builder;
 import sim.monitor.Monitor;
-import sim.monitor.MonitorBuilder;
-import sim.monitor.publishers.Aggregate;
 import sim.monitor.timing.TimeUnit;
 
 /**
@@ -19,7 +18,8 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		String container = "sim.monitoring:type=Testing";
+
+		Thread.sleep(2000);
 
 		/*
 		 * Monitor monitor =
@@ -50,32 +50,30 @@ public class Test {
 		c.hit();
 		 */
 
-		Monitor counter = MonitorBuilder
-		.inContainer(container)
-		.addStatistic(Aggregate.Count)
-		.publishRawValues(false)
-		.build("Counter test", "counter desc");
+		Monitor counter = Builder.Monitor("Counter test")
+				.description("counter desc").tags().add("testing").filters()
+				.rates().addCount().build();
 
 		counter.hit();
 		Thread.sleep(20);
 		counter.hit();
 
-		Monitor mlv = MonitorBuilder.inContainer(container)
-				.addRate(Aggregate.Sum, TimeUnit.Second, 1)
-				.applyDelta()
-				.build("Value Long Test", "long value test descr");
+		Monitor mlv = Builder.Monitor("Value Long Test")
+				.description("long value test descr").tags().add("testing")
+				.filters().addDelta().rates().addAverage()
+				.add(TimeUnit.Second, 1).publishAggregate().build();
 		//mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");
 		// mlv.setRateStatistic(Type.sum, TimeUnit.Second, 1);
 		//mlv.countRate(TimeUnit.Second, 1);
 		//mlv.min();
 		//mlv.max();
 		mlv.hit(new Long(2));
-		Thread.sleep(1000);
-		mlv.hit(new Long(20));
-		Thread.sleep(1000);
+		// Thread.sleep(1000);
+		mlv.hit(new Long(8));
+		// Thread.sleep(1000);
 		mlv.hit(new Long(30));
-		Thread.sleep(1000);
-		mlv.hit(new Long(1));
+		// Thread.sleep(1000);
+		mlv.hit(new Long(5));
 
 		Thread.sleep(1000);
 

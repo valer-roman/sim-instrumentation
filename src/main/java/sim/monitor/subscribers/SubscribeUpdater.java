@@ -8,7 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import sim.monitor.Data;
+import sim.monitor.Hit;
+import sim.monitor.Tags;
 
 /**
  * Keep track of all subscribers, inform them about updates
@@ -30,9 +31,10 @@ public class SubscribeUpdater {
 		reloadSubscribers();
 	}
 
-	public void updateAllSubscribers(Collection<Data> datas) {
+	public void updateAllSubscribers(Collection<Hit> hits, Tags tags,
+			String name, String description) {
 		for (Subscriber s : subscribers) {
-			s.update(datas);
+			s.update(hits, tags, name, description);
 		}
 	}
 

@@ -18,11 +18,8 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import sim.monitor.Data;
-import sim.monitor.naming.Container;
+import sim.monitor.Hit;
+import sim.monitor.Tags;
 import sim.monitor.subscribers.Subscriber;
 
 /**
@@ -34,44 +31,61 @@ import sim.monitor.subscribers.Subscriber;
  */
 public class MBeanSubscriber implements Subscriber {
 
-	private static final Logger logger = LoggerFactory
+	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
 			.getLogger(MBeanSubscriber.class);
 
 	private MBeanServer mbServer;
 
-	private Map<Container, DynamicMBean> mbeans = new HashMap<Container, DynamicMBean>();
+	private Map<Tags, DynamicMBean> mbeans = new HashMap<Tags, DynamicMBean>();
 
 	public MBeanSubscriber() {
 		mbServer = ManagementFactory.getPlatformMBeanServer();
 	}
 
+	private static ObjectName fromTags(Tags tags) {
+		StringBuilder sb = new StringBuilder(Tags.DOMAIN);
+		if (tags.getTags().length > 0) {
+			sb.append(":");
+		}
+		for (int i = 0; i < tags.getTags().length; i++) {
+			if (i > 0) {
+				sb.append(",");
+			}
+			sb.append("tag" + i + "=" + tags.getTags()[i]);
+		}
+		try {
+			return new ObjectName(sb.toString());
+		} catch (MalformedObjectNameException e) {
+			logger.error("Could not createObjectName for container " + tags, e);
+			return null;
+		} catch (NullPointerException e) {
+			logger.error("Null container received!", e);
+			return null;
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection)
+	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection,
+	 * sim.monitor.Tags, java.lang.String, java.lang.String)
 	 */
-	public void update(Collection<Data> datas) {
-		for (Data data : datas) {
+	public void update(Collection<Hit> hits, Tags tags, String name,
+			String description) {
+		logger.info("updating mbean for attribute " + name);
+		for (Hit hit : hits) {
 			DynamicMBean dynMBean = null;
-			if (!mbeans.containsKey(data.getName().getContainer())) {
+			if (!mbeans.containsKey(tags)) {
 				dynMBean = new DynamicMBean();
-				mbeans.put(data.getName().getContainer(), dynMBean);
+				mbeans.put(tags, dynMBean);
 			} else {
-				dynMBean = mbeans.get(data.getName().getContainer());
+				dynMBean = mbeans.get(tags);
 			}
 			boolean containsAttribute = dynMBean.getAttributes().containsKey(
-					data.getName().getName());
+					name);
 
-			Container container = data.getName().getContainer();
-			ObjectName objectName = null;
-			try {
-				objectName = new ObjectName(container.toString());
-			} catch (MalformedObjectNameException e) {
-				logger.error("Could not createObjectName for container "
-						+ container, e);
-				return;
-			} catch (NullPointerException e) {
-				logger.error("Null container received!", e);
+			ObjectName objectName = fromTags(tags);
+			if (objectName == null) {
 				return;
 			}
 			Set<ObjectInstance> instances = mbServer.queryMBeans(objectName, null);
@@ -94,9 +108,10 @@ public class MBeanSubscriber implements Subscriber {
 
 
 			dynMBean.getAttributes().put(
-					data.getName().getName(),
-					new AttributeData(data.getName().getDescription(), data
-							.getValue().toString(), data.getValue().getClass()
+					name,
+					new AttributeData(description, hit
+							.getValue().toString(),
+							hit.getValue().getClass()
 							.getName()));
 
 			if (!containsAttribute || instances.isEmpty()) {

@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import sim.monitor.Data;
+import sim.monitor.Hit;
+import sim.monitor.Tags;
 
 /**
  * @author val
@@ -26,12 +27,14 @@ public class MockSubscriber implements Subscriber {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection)
+	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection,
+	 * sim.monitor.Tags, java.lang.String, java.lang.String)
 	 */
-	public void update(Collection<Data> datas) {
-		Data data = datas.iterator().next();
-		System.out.println(data.getValue().getClass());
-		values.add(data.getValue());
+	public void update(Collection<Hit> hits, Tags tags, String name,
+			String description) {
+		Hit hit = hits.iterator().next();
+		System.out.println(hit.getValue());
+		values.add(hit.getValue());
 	}
 
 }

@@ -3,7 +3,7 @@
  */
 package sim.monitor.processing;
 
-import sim.monitor.MonitorCore;
+import sim.monitor.Monitor;
 
 /**
  * 
@@ -32,13 +32,13 @@ public class HitProcessor {
 		}
 	}
 
-	public void acceptMonitor(MonitorCore monitor) {
+	public void acceptMonitor(Monitor monitor) {
 		HitProcessorTask hitTask = this.hitTasks[monitor.hashCode()
 		                                         % this.availableProcessors];
 		hitTask.acceptMonitor(monitor);
 	}
 
-	public void signalHit(MonitorCore monitor) {
+	public void signalHit(Monitor monitor) {
 		HitProcessorTask hitTask = this.hitTasks[monitor.hashCode()
 		                                         % this.availableProcessors];
 		hitTask.signalHit(monitor);

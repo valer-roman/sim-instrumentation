@@ -9,12 +9,11 @@ package sim.monitor.timing;
  */
 public enum TimeUnit {
 
-	None,
 	Second,
 	Minute,
 	Hour,
 	Day;
-	
+
 	public int getSeconds() {
 		switch (this) {
 		case Second:
@@ -27,6 +26,21 @@ public enum TimeUnit {
 			return 3600*24;
 		default:
 			return 0;
+		}
+	}
+
+	public String toShortString() {
+		switch (this) {
+		case Second:
+			return "S";
+		case Minute:
+			return "M";
+		case Hour:
+			return "H";
+		case Day:
+			return "D";
+		default:
+			return "";
 		}
 	}
 }

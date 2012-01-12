@@ -7,14 +7,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import sim.monitor.Data;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import sim.monitor.Hit;
 import sim.monitor.timing.TimePeriod;
 
 /**
  * @author val
  *
  */
-public class TimeIntervalSampler implements Transformer {
+public class TimeIntervalSampler implements Filter {
 
 	private TimePeriod timePeriod;
 
@@ -27,21 +30,48 @@ public class TimeIntervalSampler implements Transformer {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see sim.monitor.Transformer#transform(sim.monitor.Data)
+	 * @see sim.monitor.Transformer#transform(sim.monitor.Hit)
 	 */
-	public Collection<Data> transform(Collection<Data> datas) {
-		List<Data> result = new ArrayList<Data>();
+	public Collection<Hit> transform(Collection<Hit> hits) {
+		List<Hit> result = new ArrayList<Hit>();
 
-		for (Data data : datas) {
-			long timestamp = data.getTimestamp();
+		for (Hit hit : hits) {
+			long timestamp = hit.getTimestamp();
 			if (timePeriod.lessThan(timestamp - lastDataTime)
 					|| lastDataTime == 0) {
 				// value = data.getValue(); value stays with the same data
-				result.add(data);
+				result.add(hit);
 				lastDataTime = timestamp;
 			}
 		}
 
 		return result;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder()
+		.append(timePeriod).toHashCode();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof TimeIntervalSampler)) {
+			return false;
+		}
+		TimeIntervalSampler other = (TimeIntervalSampler) obj;
+		return new EqualsBuilder().append(timePeriod, other.timePeriod)
+				.isEquals();
+	}
+
 }

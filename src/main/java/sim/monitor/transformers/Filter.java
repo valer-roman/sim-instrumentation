@@ -5,14 +5,14 @@ package sim.monitor.transformers;
 
 import java.util.Collection;
 
-import sim.monitor.Data;
+import sim.monitor.Hit;
 
 /**
  * @author val
  *
  */
-public interface Transformer {
+public interface Filter {
 
-	public Collection<Data> transform(Collection<Data> datas);
+	public Collection<Hit> transform(Collection<Hit> hits);
 
 }

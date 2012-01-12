@@ -7,12 +7,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import sim.monitor.MonitorCore;
+import sim.monitor.Monitor;
 
 /**
  * Task running the hit processing of the monitors
  * 
- * Through the method {@link #signalHit(MonitorCore)} the task is announced that
+ * Through the method {@link #signalHit(Monitor)} the task is announced that
  * more hits were received.
  * 
  * @author val
@@ -20,7 +20,7 @@ import sim.monitor.MonitorCore;
  */
 public class HitProcessorTask extends Thread {
 
-	private BlockingQueue<MonitorCore> monitors = new LinkedBlockingQueue<MonitorCore>();
+	private BlockingQueue<Monitor> monitors = new LinkedBlockingQueue<Monitor>();
 
 	private final Object lock = new Object();
 
@@ -46,7 +46,7 @@ public class HitProcessorTask extends Thread {
 					}
 				}
 				while (monitorsHaveHits()) {
-					for (MonitorCore monitor : monitors) {
+					for (Monitor monitor : monitors) {
 						while (monitor.hasMoreHits()) {
 							monitor.processNext();
 						}
@@ -59,7 +59,7 @@ public class HitProcessorTask extends Thread {
 	}
 
 	private boolean monitorsHaveHits() {
-		for (MonitorCore monitor : monitors) {
+		for (Monitor monitor : monitors) {
 			if (monitor.hasMoreHits()) {
 				return true;
 			}
@@ -67,11 +67,11 @@ public class HitProcessorTask extends Thread {
 		return false;
 	}
 
-	void acceptMonitor(MonitorCore monitor) {
+	void acceptMonitor(Monitor monitor) {
 		monitors.add(monitor);
 	}
 
-	void signalHit(MonitorCore monitor) {
+	void signalHit(Monitor monitor) {
 		synchronized (lock) {
 			if (waiting.get()) {
 				lock.notify();

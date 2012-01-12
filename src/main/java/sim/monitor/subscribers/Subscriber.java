@@ -5,7 +5,8 @@ package sim.monitor.subscribers;
 
 import java.util.Collection;
 
-import sim.monitor.Data;
+import sim.monitor.Hit;
+import sim.monitor.Tags;
 
 /**
  * @author val
@@ -13,6 +14,7 @@ import sim.monitor.Data;
  */
 public interface Subscriber {
 
-	public void update(Collection<Data> datas);
+	public void update(Collection<Hit> hits, Tags tags, String name,
+			String description);
 
 }

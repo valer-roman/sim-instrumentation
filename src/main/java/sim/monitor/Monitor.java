@@ -1,8 +1,21 @@
 package sim.monitor;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import org.slf4j.LoggerFactory;
+import sim.monitor.processing.HitProcessor;
+import sim.monitor.subscribers.SubscribeUpdater;
+import sim.monitor.timing.TimePeriod;
+import sim.monitor.timing.TimeUnit;
+import sim.monitor.transformers.DeltaTransformer;
+import sim.monitor.transformers.Filter;
+import sim.monitor.transformers.TimeIntervalSampler;
 
 /**
  * 
@@ -15,17 +28,177 @@ import org.slf4j.LoggerFactory;
  * Once the monitored application has new relevant data for a monitor it should
  * call one of the hit methods of this class.
  * 
+ * This is the core of the monitor, here are the configurations, the
+ * transformers and the publishers of the monitor saved.
+ * 
+ * Once a hit is received from the Monitor class it is transmitted to this
+ * class. Here there are two process types running on the hit : the
+ * transformation and the publications. The transformation processes filter,
+ * change or detail the data received with the hit. The publication processes
+ * are preparing the data for visualization with external or internal
+ * visualization tools.
+ * 
  * @author val
  * 
  */
-public class Monitor {
+public class Monitor extends Publisher {
 
-	private org.slf4j.Logger logger = LoggerFactory.getLogger(Monitor.class);
+	// private org.slf4j.Logger logger = LoggerFactory.getLogger(Monitor.class);
 
-	private MonitorCore monitorCore;
+	/**
+	 * The tags of the monitor
+	 */
+	protected Tags tags;
 
-	Monitor(MonitorCore monitorCore) {
-		this.monitorCore = monitorCore;
+	private List<Filter> filters = new ArrayList<Filter>();
+	private boolean forcePublishRawValues = false;
+
+	private List<Aggregation> aggregations = new ArrayList<Aggregation>();
+
+	private BlockingQueue<Hit> hits = new LinkedBlockingQueue<Hit>();
+
+	private Collection<Hit> tmpHits = new ArrayList<Hit>();
+
+	Monitor(String name, String description, boolean publishRawValues,
+			List<String> tags, List<Filter> filters,
+			List<Aggregation> aggregations,
+			Map<Aggregation, List<sim.monitor.Rate>> rates) {
+		this.name = name;
+		this.description = description;
+		this.forcePublishRawValues = publishRawValues;
+		this.tags = new Tags(tags.toArray(new String[0]));
+		this.filters = filters;
+		this.aggregations = aggregations;
+		for (Entry<Aggregation, List<Rate>> entry : rates.entrySet()) {
+			Aggregation aggregation = this.aggregations.get(this.aggregations
+					.lastIndexOf(entry.getKey()));
+			aggregation.setRates(entry.getValue());
+		}
+		for (Aggregation aggregation : this.aggregations) {
+			aggregation.setMonitor(this);
+			for (Rate rate : aggregation.getRates()) {
+				rate.scheduler();
+			}
+		}
+
+	}
+
+	/**
+	 * @return the tags
+	 */
+	Tags getTags() {
+		return tags;
+	}
+
+	/**
+	 * @param tags
+	 *            the tags to set
+	 */
+	void setTags(Tags tags) {
+		this.tags = tags;
+	}
+
+	void acceptHit(long timestamp, Object value) {
+		hits.add(new Hit(timestamp, value));
+		HitProcessor.instance().signalHit(this);
+	}
+
+	/*
+	 * Establishes a picking out interval on the monitors value. A new value is
+	 * elected only after this interval has passed since the last value
+	 * 
+	 * @param timeUnit the time unit (seconds, minutes, hours ...)
+	 * 
+	 * @param timeMultiplier the time multiplier
+	 * 
+	 * @return this monitor
+	 */
+	void useTimeIntervalSampler(TimeUnit timeUnit, int timeMultiplier) {
+		this.filters.add(new TimeIntervalSampler(new TimePeriod(timeUnit,
+				timeMultiplier)));
+	}
+
+	/*
+	 * Set on monitor wheter to keep the received values or to perform a delta
+	 * difference on current valu and last value.
+	 * 
+	 * @param delta boolean setting if delta is active or not
+	 * 
+	 * @return this monitor
+	 */
+	Monitor useDelta() {
+		this.filters.add(new DeltaTransformer());
+		return this;
+	}
+
+	void setRawValuesPublished(boolean rawValuesPublished) {
+		this.forcePublishRawValues = rawValuesPublished;
+	}
+
+	boolean arePublishedRawValues() {
+		return this.forcePublishRawValues;
+	}
+
+	public boolean hasMoreHits() {
+		return !this.hits.isEmpty();
+	}
+
+	public void processNext() {
+		processHits(hits.poll());
+	}
+
+	protected void processHits(Hit hit) {
+		Collection<Hit> hits = new ArrayList<Hit>();
+
+		hits.add(hit);
+
+		for (Filter filter : filters) {
+			hits = filter.transform(hits);
+		}
+
+		tmpHits.addAll(hits);
+
+		if (this.aggregations.isEmpty() || forcePublishRawValues) {
+			publish();
+		}
+
+		// process data with publishers
+		for (Aggregation aggregation : aggregations) {
+			aggregation.hit(hits);
+			if (aggregation.getRates().isEmpty()
+					|| aggregation.isForcePublication()) {
+				aggregation.publish();
+			}
+			for (Rate rate : aggregation.getRates()) {
+				rate.hit(hits);
+				rate.publish();
+			}
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see sim.monitor.Publisher#publish()
+	 */
+	@Override
+	public void publish() {
+		SubscribeUpdater.instance().updateAllSubscribers(tmpHits, getTags(),
+				name,
+				getDescription());
+		tmpHits.clear();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see sim.monitor.Publisher#getSuffix()
+	 */
+	@Override
+	public String getSuffix() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**
@@ -36,37 +209,37 @@ public class Monitor {
 	 */
 	public void hit(Long value) {
 		long timestamp = System.currentTimeMillis();
-		this.monitorCore.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value);
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit(Double value) {
 		long timestamp = System.currentTimeMillis();
-		this.monitorCore.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value);
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit(Integer value) {
 		long timestamp = System.currentTimeMillis();
-		this.monitorCore.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value);
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit(String value) {
 		long timestamp = System.currentTimeMillis();
-		this.monitorCore.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value);
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit(Date value) {
 		long timestamp = System.currentTimeMillis();
-		this.monitorCore.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value);
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit() {
 		long timestamp = System.currentTimeMillis();
-		this.monitorCore.acceptHit(timestamp, new Long(1));
+		this.acceptHit(timestamp, new Long(1));
 		// threadPool.execute(new Processor(timestamp, new Long(1)));
 	}
 

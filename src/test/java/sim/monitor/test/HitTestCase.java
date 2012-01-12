@@ -4,10 +4,9 @@
 package sim.monitor.test;
 
 import junit.framework.TestCase;
+import sim.monitor.Builder;
 import sim.monitor.Monitor;
-import sim.monitor.MonitorBuilder;
 import sim.monitor.processing.HitProcessor;
-import sim.monitor.publishers.Aggregate;
 import sim.monitor.subscribers.MockSubscriber;
 import sim.monitor.subscribers.SubscribeUpdater;
 
@@ -68,8 +67,9 @@ public class HitTestCase extends TestCase {
 	}
 
 	public void testSimpleValueMonitor() {
-		Monitor valueMonitor = MonitorBuilder.inContainer(container)
-				.build("Value Monitor", "Just publish the value received in hits");
+		Monitor valueMonitor = Builder.Monitor("Value Monitor")
+				.description("Just publish the value received in hits").tags()
+				.add("testing").build();
 
 		for (int i = 0; i < 100; i++) {
 			valueMonitor.hit(new Integer(i));
@@ -90,11 +90,9 @@ public class HitTestCase extends TestCase {
 	}
 
 	public void testDeltaTransformerMonitor() {
-		Monitor valueMonitor = MonitorBuilder
-				.inContainer(container)
-				.applyDelta()
-				.build("Value Monitor",
-						"Make a delta out of values and publish");
+		Monitor valueMonitor = Builder.Monitor("Value Monitor")
+				.description("Make a delta out of values and publish").tags()
+				.add("testing").filters().addDelta().build();
 
 		for (int i = 0; i < 100; i++) {
 			valueMonitor.hit(new Integer(i));
@@ -105,15 +103,15 @@ public class HitTestCase extends TestCase {
 		assertNotNull(MockSubscriber.instance);
 		assertTrue(MockSubscriber.instance.values.size() > 0);
 		for (int i = 0; i < 100; i++) {
-			assertEquals(Integer.class, MockSubscriber.instance.values.get(i)
+			assertEquals(Long.class, MockSubscriber.instance.values.get(i)
 					.getClass());
 			if (i == 0) {
 				assertEquals(0,
-						((Integer) MockSubscriber.instance.values.get(i))
+						((Long) MockSubscriber.instance.values.get(i))
 						.intValue());
 			} else {
 				assertEquals(1,
-						((Integer) MockSubscriber.instance.values.get(i))
+						((Long) MockSubscriber.instance.values.get(i))
 						.intValue());
 			}
 		}
@@ -121,9 +119,9 @@ public class HitTestCase extends TestCase {
 	}
 
 	public void testCounterHit() {
-		Monitor monitor = MonitorBuilder.inContainer(container)
-				.addStatistic(Aggregate.Count).publishRawValues(false)
-				.build("Counter", "Counts the hits on this monitor");
+		Monitor monitor = Builder.Monitor("Counter")
+				.description("Counts the hits on this monitor").tags()
+				.add("testing").filters().rates().addCount().build();
 
 		for (int i = 0; i < 10; i++) {
 			monitor.hit();
