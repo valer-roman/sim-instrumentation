@@ -7,10 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import sim.monitor.subscribers.SubscribeUpdater;
 import sim.monitor.timing.TimePeriod;
@@ -45,6 +41,8 @@ public class Rate extends Publisher {
 		this.rateTime = rateTime;
 		this.aggregation = aggregation;
 		this.rateTimeInMillis = this.rateTime.getSeconds() * 1000;
+
+		RateScheduler.instance().registerRate(this);
 	}
 
 	/**
@@ -143,55 +141,42 @@ public class Rate extends Publisher {
 		resultHits.clear();
 	}
 
-	private Runnable command = new Runnable() {
+	void update() {
+		long currentTime = System.currentTimeMillis();
 
-		public void run() {
-			try {
-				long currentTime = System.currentTimeMillis();
-				logger.info("run scheduler, time is : " + currentTime);
+		if (lastTimestampMark == 0) {
+			logger.info("skipping scheduler no mark found yet in hits!");
+			return;
+		}
 
-				if (lastTimestampMark == 0) {
-					logger.info("skipping scheduler no mark found yet in hits!");
-					return;
+		Long hitTimestamp = null;
+		Hit resultHit = null;
+		while (hitTimestamp == null || currentTime >= hitTimestamp) {
+			if (hitTimestamp != null) {
+				resultHit = hits.get(hitTimestamp);
+				hits.remove(hitTimestamp);
+				logger.info("got from map value : " + resultHit.getValue()
+						+ " and remove timestamp : " + hitTimestamp);
+				hitTimestamp = hitTimestamp + rateTimeInMillis;
+			} else {
+				// find oldest timestamp in map
+				Long mark = lastTimestampMark + rateTimeInMillis;
+				while (hits.containsKey(mark)) {
+					hitTimestamp = mark;
+					mark = mark - rateTimeInMillis;
 				}
-
-				Long hitTimestamp = null;
-				Hit resultHit = null;
-				while (hitTimestamp == null || currentTime >= hitTimestamp) {
-					if (hitTimestamp != null) {
-						resultHit = hits.get(hitTimestamp);
-						hits.remove(hitTimestamp);
-						logger.info("got from map value : " + resultHit.getValue()
-								+ " and remove timestamp : " + hitTimestamp);
-						hitTimestamp = hitTimestamp + rateTimeInMillis;
-					} else {
-						// find oldest timestamp in map
-						Long mark = lastTimestampMark + rateTimeInMillis;
-						while (hits.containsKey(mark)) {
-							hitTimestamp = mark;
-							mark = mark - rateTimeInMillis;
-						}
-						logger.info("got oldest timestamp in map : " + hitTimestamp);
-						if (hitTimestamp == null) {
-							// FIXME should update sbuscribers with value 0, no
-							// data
-							break;
-						}
-					}
+				logger.info("got oldest timestamp in map : " + hitTimestamp);
+				if (hitTimestamp == null) {
+					// FIXME should update sbuscribers with value 0, no
+					// data
+					break;
 				}
-				if (resultHit != null) {
-					resultHits.add(resultHit);
-					publish();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
 		}
-	};
-
-	void scheduler() {
-		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-		ScheduledFuture<?> scheduleFuture = scheduler.scheduleAtFixedRate(
-				command, 0, this.rateTime.getSeconds(), TimeUnit.SECONDS);
+		if (resultHit != null) {
+			resultHits.add(resultHit);
+			publish();
+		}
 	}
+
 }

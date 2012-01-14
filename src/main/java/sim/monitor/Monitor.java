@@ -76,11 +76,10 @@ public class Monitor extends Publisher {
 		}
 		for (Aggregation aggregation : this.aggregations) {
 			aggregation.setMonitor(this);
-			for (Rate rate : aggregation.getRates()) {
-				rate.scheduler();
-			}
+			// for (Rate rate : aggregation.getRates()) {
+			// rate.scheduler();
+			// }
 		}
-
 	}
 
 	/**

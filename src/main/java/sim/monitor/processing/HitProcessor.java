@@ -57,4 +57,10 @@ public class HitProcessor {
 		}
 		return true;
 	}
+
+	void shutdown() {
+		for (int i = 0; i < hitTasks.length; i++) {
+			hitTasks[i].interrupt();
+		}
+	}
 }
