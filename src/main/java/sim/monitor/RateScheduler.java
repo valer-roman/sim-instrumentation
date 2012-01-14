@@ -18,6 +18,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class RateScheduler {
 
+	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
+			.getLogger(Rate.class);
+
 	private Map<Long, Set<Rate>> ratesBySeconds = new HashMap<Long, Set<Rate>>();
 
 	private ScheduledExecutorService scheduler = Executors
@@ -57,7 +60,11 @@ public class RateScheduler {
 		public void run() {
 			Set<Rate> rates = ratesBySeconds.get(seconds);
 			for (Rate rate : rates) {
-				rate.update();
+				try {
+					rate.update();
+				} catch (Exception e) {
+					logger.error("Error in rate update !", e);
+				}
 			}
 		}
 	};

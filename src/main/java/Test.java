@@ -61,7 +61,7 @@ public class Test {
 		Monitor mlv = Builder.Monitor("Value Long Test")
 				.description("long value test descr").tags().add("testing")
 				.filters()
-				// .addDelta()
+				.addDelta()
 				.rates().addAverage()
 				.add(TimeUnit.Second, 1).description("Rate 1 sec.")
 				.publishAggregate().build();

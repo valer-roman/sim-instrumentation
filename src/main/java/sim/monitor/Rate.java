@@ -112,6 +112,7 @@ public class Rate extends Publisher {
 				count = count + 1;
 				sum = MeasureUtil.sum(sum, hit.getValue());
 				result = MeasureUtil.divide(sum, count);
+				logger.info("test : " + count + "," + sum + "," + result);
 			}
 			this.hits.put(timestamp, new Hit(timestamp, result));
 			logger.info("put in map : " + timestamp + "," + result);
@@ -153,6 +154,10 @@ public class Rate extends Publisher {
 		Hit resultHit = null;
 		while (hitTimestamp == null || currentTime >= hitTimestamp) {
 			if (hitTimestamp != null) {
+				if (!hits.containsKey(hitTimestamp)) {
+					hitTimestamp = hitTimestamp + rateTimeInMillis;
+					continue;
+				}
 				resultHit = hits.get(hitTimestamp);
 				hits.remove(hitTimestamp);
 				logger.info("got from map value : " + resultHit.getValue()
