@@ -16,8 +16,6 @@ import sim.monitor.subscribers.SubscribeUpdater;
  */
 public class HitTestCase extends TestCase {
 
-	private String container = "com.test.hits:type=Counter";
-
 	public HitTestCase() {
 		super("Hit tests");
 	}
@@ -67,9 +65,10 @@ public class HitTestCase extends TestCase {
 	}
 
 	public void testSimpleValueMonitor() {
-		Monitor valueMonitor = Builder.Monitor("Value Monitor")
-				.description("Just publish the value received in hits").tags()
-				.add("testing").build();
+		Monitor valueMonitor = Builder.Monitor("Value Monitor", "Just publish the value received in hits")
+				.tags()
+					.add("testing")
+				.build();
 
 		for (int i = 0; i < 100; i++) {
 			valueMonitor.hit(new Integer(i));
@@ -90,9 +89,12 @@ public class HitTestCase extends TestCase {
 	}
 
 	public void testDeltaTransformerMonitor() {
-		Monitor valueMonitor = Builder.Monitor("Value Monitor")
-				.description("Make a delta out of values and publish").tags()
-				.add("testing").filters().addDelta().build();
+		Monitor valueMonitor = Builder.Monitor("Value Monitor", "Make a delta out of values and publish")
+				.tags()
+					.add("testing")
+				.filters()
+					.addDelta()
+				.build();
 
 		for (int i = 0; i < 100; i++) {
 			valueMonitor.hit(new Integer(i));
@@ -119,9 +121,13 @@ public class HitTestCase extends TestCase {
 	}
 
 	public void testCounterHit() {
-		Monitor monitor = Builder.Monitor("Counter")
-				.description("Counts the hits on this monitor").tags()
-				.add("testing").filters().rates().addCount().build();
+		Monitor monitor = Builder.Monitor("Counter", "Counts the hits on this monitor")
+				.tags()
+					.add("testing")
+				.filters()
+				.rates()
+					.addCount()
+				.build();
 
 		for (int i = 0; i < 10; i++) {
 			monitor.hit();

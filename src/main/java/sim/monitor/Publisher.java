@@ -14,6 +14,11 @@ public abstract class Publisher {
 	protected String name;
 	protected String description;
 
+	Publisher(String name, String description) {
+		this.name = name;
+		this.description = description;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

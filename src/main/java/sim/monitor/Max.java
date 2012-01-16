@@ -3,6 +3,8 @@
  */
 package sim.monitor;
 
+import sim.monitor.timing.TimePeriod;
+
 
 
 /**
@@ -10,7 +12,11 @@ package sim.monitor;
  * @author val
  * 
  */
-class Max extends Aggregation {
+class Max extends Rate {
+
+	public Max(TimePeriod rateTime, String name, String description) {
+		super(rateTime, name, description);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -18,8 +24,13 @@ class Max extends Aggregation {
 	 * @see sim.monitor.publishers.Aggregation#getSuffix()
 	 */
 	@Override
-	public String getSuffix() {
-		return "MAX";
+	String getSuffix() {
+		String suffix = super.getSuffix();
+		if (suffix == null) {
+			return "MAX";
+		} else {
+			return "MAX/" + suffix;
+		}
 	}
 
 	/*

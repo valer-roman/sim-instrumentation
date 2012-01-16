@@ -50,21 +50,28 @@ public class Test {
 		c.hit();
 		 */
 
-		Monitor counter = Builder.Monitor("Counter test")
-				.description("counter desc").tags().add("testing").filters()
-				.rates().addCount().build();
+		Monitor counter = Builder.Monitor("Counter test", "counter desc")
+				.tags()
+					.add("testing")
+				.filters()
+				.rates()
+					.addCount()
+				.build();
 
 		counter.hit();
 		Thread.sleep(20);
 		counter.hit();
 
-		Monitor mlv = Builder.Monitor("Value Long Test")
-				.description("long value test descr").tags().add("testing")
+		Monitor mlv = Builder
+				.Monitor("Value Long Test", "long value test descr")
+				.tags()
+					.add("testing")
 				.filters()
-				.addDelta()
-				.rates().addAverage()
-				.add(TimeUnit.Second, 1).description("Rate 1 sec.")
-				.publishAggregate().build();
+					.addDelta()
+				.rates()
+					.addAverage()
+					.addAverage(TimeUnit.Second, 1)
+				.build();
 		//mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");
 		// mlv.setRateStatistic(Type.sum, TimeUnit.Second, 1);
 		//mlv.countRate(TimeUnit.Second, 1);

@@ -4,9 +4,7 @@
 package sim.monitor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import sim.monitor.processing.HitProcessor;
 import sim.monitor.timing.TimePeriod;
@@ -26,12 +24,6 @@ public class Builder {
 	public interface Monitor extends Build {
 
 		public Tags tags();
-
-	}
-
-	public interface MonitorDescribe extends Monitor {
-
-		public Monitor description(String description);
 
 	}
 
@@ -56,55 +48,76 @@ public class Builder {
 	}
 
 	public interface Rates extends PublishRawValues, Build {
-		public AggregateDescribe addSum();
 
-		public AggregateDescribe addSum(String name);
+		public Rates addSum();
 
-		public AggregateDescribe addCount();
+		public Rates addSum(String name);
 
-		public AggregateDescribe addCount(String name);
+		public Rates addSum(String name, String description);
 
-		public AggregateDescribe addAverage();
+		public Rates addSum(TimeUnit timeUnit, int multiplier);
 
-		public AggregateDescribe addAverage(String name);
+		public Rates addSum(TimeUnit timeUnit, int multiplier, String name);
 
-		public AggregateDescribe addMinimum();
+		public Rates addSum(TimeUnit timeUnit, int multiplier, String name,
+				String description);
 
-		public AggregateDescribe addMinimum(String name);
 
-		public AggregateDescribe addMaximum();
+		public Rates addCount();
 
-		public AggregateDescribe addMaximum(String name);
+		public Rates addCount(String name);
 
-		public AggregateDescribe add(Aggregation aggregation);
+		public Rates addCount(String name, String description);
 
-		public AggregateDescribe add(Aggregation aggregation, String name);
-	}
+		public Rates addCount(TimeUnit timeUnit, int multiplier);
 
-	public interface Aggregate extends Rates {
+		public Rates addCount(TimeUnit timeUnit, int multiplier, String name);
 
-		public RateDescribe add(TimeUnit timeUnit, int multiplier);
+		public Rates addCount(TimeUnit timeUnit, int multiplier, String name,
+				String description);
 
-		public RateDescribe add(TimeUnit timeUnit, int multiplier, String name);
 
-	}
+		public Rates addAverage();
 
-	public interface AggregateDescribe extends Aggregate {
+		public Rates addAverage(String name);
 
-		public Aggregate description(String description);
+		public Rates addAverage(String name, String description);
 
-	}
+		public Rates addAverage(TimeUnit timeUnit, int multiplier);
 
-	public interface RateDescribe extends Rate {
-		public Rate description(String description);
-	}
+		public Rates addAverage(TimeUnit timeUnit, int multiplier, String name);
 
-	public interface Rate extends Rates {
-		public Rates publishAggregate();
+		public Rates addAverage(TimeUnit timeUnit, int multiplier, String name,
+				String description);
 
-		public RateDescribe add(TimeUnit timeUnit, int multiplier);
 
-		public RateDescribe add(TimeUnit timeUnit, int multiplier, String name);
+		public Rates addMin();
+
+		public Rates addMin(String name);
+
+		public Rates addMin(String name, String description);
+
+		public Rates addMin(TimeUnit timeUnit, int multiplier);
+
+		public Rates addMin(TimeUnit timeUnit, int multiplier, String name);
+
+		public Rates addMin(TimeUnit timeUnit, int multiplier, String name,
+				String description);
+
+
+		public Rates addMax();
+
+		public Rates addMax(String name);
+
+		public Rates addMax(String name, String description);
+
+		public Rates addMax(TimeUnit timeUnit, int multiplier);
+
+		public Rates addMax(TimeUnit timeUnit, int multiplier, String name);
+
+		public Rates addMax(TimeUnit timeUnit, int multiplier, String name,
+				String description);
+
 	}
 
 	public interface PublishRawValues {
@@ -126,27 +139,7 @@ public class Builder {
 	private boolean publishRawValues = false;
 	private List<String> tagValues = new ArrayList<String>();
 	private List<Filter> filterInstances = new ArrayList<Filter>();
-	private List<Aggregation> aggregationInstances = new ArrayList<Aggregation>();
-	private Map<Aggregation, List<sim.monitor.Rate>> rateInstances = new HashMap<Aggregation, List<sim.monitor.Rate>>();
-
-	private Aggregation lastAggregation;
-	private sim.monitor.Rate lastRate;
-
-	private MonitorDescribe monitorDescribe = new MonitorDescribe() {
-
-		public sim.monitor.Monitor build() {
-			return builder.build();
-		}
-
-		public Tags tags() {
-			return tags;
-		}
-
-		public Monitor description(String description) {
-			builder.description = description;
-			return monitor;
-		}
-	};
+	private List<sim.monitor.Rate> rateInstances = new ArrayList<sim.monitor.Rate>();
 
 	private Monitor monitor = new Monitor() {
 
@@ -211,417 +204,334 @@ public class Builder {
 			return build;
 		}
 
-		public AggregateDescribe addSum(String name) {
-			builder.addAggregation(new Sum(), name);
-			return aggregateDescribe;
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addSum()
+		 */
+		public Rates addSum() {
+			builder.addSumRate(null, 0, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addSum(java.lang.String)
+		 */
+		public Rates addSum(String name) {
+			builder.addSumRate(null, 0, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addSum(java.lang.String,
+		 * java.lang.String)
+		 */
+		public Rates addSum(String name, String description) {
+			builder.addSumRate(null, 0, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addSum(sim.monitor.timing.TimeUnit,
+		 * int)
+		 */
+		public Rates addSum(TimeUnit timeUnit, int multiplier) {
+			builder.addSumRate(timeUnit, multiplier, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addSum(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String)
+		 */
+		public Rates addSum(TimeUnit timeUnit, int multiplier, String name) {
+			builder.addSumRate(timeUnit, multiplier, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addSum(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String, java.lang.String)
+		 */
+		public Rates addSum(TimeUnit timeUnit, int multiplier, String name,
+				String description) {
+			builder.addSumRate(timeUnit, multiplier, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addCount()
+		 */
+		public Rates addCount() {
+			builder.addCountRate(null, 0, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addCount(java.lang.String)
+		 */
+		public Rates addCount(String name) {
+			builder.addCountRate(null, 0, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addCount(java.lang.String,
+		 * java.lang.String)
+		 */
+		public Rates addCount(String name, String description) {
+			builder.addCountRate(null, 0, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addCount(sim.monitor.timing.TimeUnit,
+		 * int)
+		 */
+		public Rates addCount(TimeUnit timeUnit, int multiplier) {
+			builder.addCountRate(timeUnit, multiplier, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addCount(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String)
+		 */
+		public Rates addCount(TimeUnit timeUnit, int multiplier, String name) {
+			builder.addCountRate(timeUnit, multiplier, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addCount(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String, java.lang.String)
+		 */
+		public Rates addCount(TimeUnit timeUnit, int multiplier, String name,
+				String description) {
+			builder.addCountRate(timeUnit, multiplier, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addAverage()
+		 */
+		public Rates addAverage() {
+			builder.addAverageRate(null, 0, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addAverage(java.lang.String)
+		 */
+		public Rates addAverage(String name) {
+			builder.addAverageRate(null, 0, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addAverage(java.lang.String,
+		 * java.lang.String)
+		 */
+		public Rates addAverage(String name, String description) {
+			builder.addAverageRate(null, 0, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * sim.monitor.Builder.Rates#addAverage(sim.monitor.timing.TimeUnit,
+		 * int)
+		 */
+		public Rates addAverage(TimeUnit timeUnit, int multiplier) {
+			builder.addAverageRate(timeUnit, multiplier, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * sim.monitor.Builder.Rates#addAverage(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String)
+		 */
+		public Rates addAverage(TimeUnit timeUnit, int multiplier, String name) {
+			builder.addAverageRate(timeUnit, multiplier, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * sim.monitor.Builder.Rates#addAverage(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String, java.lang.String)
+		 */
+		public Rates addAverage(TimeUnit timeUnit, int multiplier, String name,
+				String description) {
+			builder.addAverageRate(timeUnit, multiplier, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMin()
+		 */
+		public Rates addMin() {
+			builder.addMinRate(null, 0, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMin(java.lang.String)
+		 */
+		public Rates addMin(String name) {
+			builder.addMinRate(null, 0, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMin(java.lang.String,
+		 * java.lang.String)
+		 */
+		public Rates addMin(String name, String description) {
+			builder.addMinRate(null, 0, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMin(sim.monitor.timing.TimeUnit,
+		 * int)
+		 */
+		public Rates addMin(TimeUnit timeUnit, int multiplier) {
+			builder.addMinRate(timeUnit, multiplier, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMin(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String)
+		 */
+		public Rates addMin(TimeUnit timeUnit, int multiplier, String name) {
+			builder.addMinRate(timeUnit, multiplier, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMin(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String, java.lang.String)
+		 */
+		public Rates addMin(TimeUnit timeUnit, int multiplier, String name,
+				String description) {
+			builder.addMinRate(timeUnit, multiplier, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMax()
+		 */
+		public Rates addMax() {
+			builder.addMaxRate(null, 0, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMax(java.lang.String)
+		 */
+		public Rates addMax(String name) {
+			builder.addMaxRate(null, 0, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMax(java.lang.String,
+		 * java.lang.String)
+		 */
+		public Rates addMax(String name, String description) {
+			builder.addMaxRate(null, 0, name, description);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMax(sim.monitor.timing.TimeUnit,
+		 * int)
+		 */
+		public Rates addMax(TimeUnit timeUnit, int multiplier) {
+			builder.addMaxRate(timeUnit, multiplier, null, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMax(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String)
+		 */
+		public Rates addMax(TimeUnit timeUnit, int multiplier, String name) {
+			builder.addMaxRate(timeUnit, multiplier, name, null);
+			return this;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Rates#addMax(sim.monitor.timing.TimeUnit,
+		 * int, java.lang.String, java.lang.String)
+		 */
+		public Rates addMax(TimeUnit timeUnit, int multiplier, String name,
+				String description) {
+			builder.addMaxRate(timeUnit, multiplier, name, description);
+			return this;
 		}
 
-		public AggregateDescribe addSum() {
-			builder.addAggregation(new Sum(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum(String name) {
-			builder.addAggregation(new Min(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum(String name) {
-			builder.addAggregation(new Max(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount(String name) {
-			builder.addAggregation(new Count(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount() {
-			builder.addAggregation(new Count(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage(String name) {
-			builder.addAggregation(new Average(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage() {
-			builder.addAggregation(new Average(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation,
-				String name) {
-			builder.addAggregation(aggregation, name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation) {
-			builder.addAggregation(aggregation, null);
-			return aggregateDescribe;
-		}
-	};
-
-	private AggregateDescribe aggregateDescribe = new AggregateDescribe() {
-
-		public sim.monitor.Monitor build() {
-			return builder.build();
-		}
-
-		public Build publishRawValues() {
-			builder.publishRawValues = true;
-			return builder.build;
-		}
-
-		public AggregateDescribe addSum(String name) {
-			builder.addAggregation(new Sum(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addSum() {
-			builder.addAggregation(new Sum(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum(String name) {
-			builder.addAggregation(new Min(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum(String name) {
-			builder.addAggregation(new Max(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount(String name) {
-			builder.addAggregation(new Count(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount() {
-			builder.addAggregation(new Count(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage(String name) {
-			builder.addAggregation(new Average(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage() {
-			builder.addAggregation(new Average(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation, String name) {
-			builder.addAggregation(aggregation, name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation) {
-			builder.addAggregation(aggregation, null);
-			return aggregateDescribe;
-		}
-
-		public Aggregate description(String description) {
-			aggregationInstances.get(aggregationInstances.size() - 1)
-			.setDescription(description);
-			return builder.aggregate;
-		}
-
-		public RateDescribe add(TimeUnit timeUnit, int multiplier, String name) {
-			builder.addRate(timeUnit, multiplier, name);
-			return rateDescribe;
-		}
-
-		public RateDescribe add(TimeUnit timeUnit, int multiplier) {
-			builder.addRate(timeUnit, multiplier, null);
-			return rateDescribe;
-		}
-
-	};
-
-	private Aggregate aggregate = new Aggregate() {
-
-		public sim.monitor.Monitor build() {
-			return builder.build();
-		}
-
-		public Build publishRawValues() {
-			builder.publishRawValues = true;
-			return builder.build;
-		}
-
-		public AggregateDescribe addSum(String name) {
-			builder.addAggregation(new Sum(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addSum() {
-			builder.addAggregation(new Sum(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum(String name) {
-			builder.addAggregation(new Min(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum(String name) {
-			builder.addAggregation(new Max(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount(String name) {
-			builder.addAggregation(new Count(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount() {
-			builder.addAggregation(new Count(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage(String name) {
-			builder.addAggregation(new Average(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage() {
-			builder.addAggregation(new Average(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation, String name) {
-			builder.addAggregation(aggregation, name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation) {
-			builder.addAggregation(aggregation, null);
-			return aggregateDescribe;
-		}
-
-		public RateDescribe add(TimeUnit timeUnit, int multiplier, String name) {
-			builder.addRate(timeUnit, multiplier, name);
-			return rateDescribe;
-		}
-
-		public RateDescribe add(TimeUnit timeUnit, int multiplier) {
-			builder.addRate(timeUnit, multiplier, null);
-			return rateDescribe;
-		}
-
-	};
-
-	private RateDescribe rateDescribe = new RateDescribe() {
-
-		public AggregateDescribe addSum(String name) {
-			builder.addAggregation(new Sum(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addSum() {
-			builder.addAggregation(new Sum(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum(String name) {
-			builder.addAggregation(new Min(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum(String name) {
-			builder.addAggregation(new Max(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount(String name) {
-			builder.addAggregation(new Count(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount() {
-			builder.addAggregation(new Count(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage(String name) {
-			builder.addAggregation(new Average(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage() {
-			builder.addAggregation(new Average(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation, String name) {
-			builder.addAggregation(aggregation, name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation) {
-			builder.addAggregation(aggregation, null);
-			return aggregateDescribe;
-		}
-
-		public Build publishRawValues() {
-			builder.publishRawValues = true;
-			return builder.build;
-		}
-
-		public sim.monitor.Monitor build() {
-			return builder.build();
-		}
-
-		public RateDescribe add(TimeUnit timeUnit, int multiplier, String name) {
-			builder.addRate(timeUnit, multiplier, name);
-			return rateDescribe;
-		}
-
-		public RateDescribe add(TimeUnit timeUnit, int multiplier) {
-			builder.addRate(timeUnit, multiplier, null);
-			return rateDescribe;
-		}
-
-		public Rates publishAggregate() {
-			lastAggregation.setForcePublication(true);
-			return rates;
-		}
-
-		public Rate description(String description) {
-			lastRate.setDescription(description);
-			return builder.rate;
-		}
-	};
-
-	private Rate rate = new Rate() {
-
-		public AggregateDescribe addSum(String name) {
-			builder.addAggregation(new Sum(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addSum() {
-			builder.addAggregation(new Sum(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum(String name) {
-			builder.addAggregation(new Min(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMinimum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum(String name) {
-			builder.addAggregation(new Max(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addMaximum() {
-			builder.addAggregation(new Min(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount(String name) {
-			builder.addAggregation(new Count(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addCount() {
-			builder.addAggregation(new Count(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage(String name) {
-			builder.addAggregation(new Average(), name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe addAverage() {
-			builder.addAggregation(new Average(), null);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation, String name) {
-			builder.addAggregation(aggregation, name);
-			return aggregateDescribe;
-		}
-
-		public AggregateDescribe add(Aggregation aggregation) {
-			builder.addAggregation(aggregation, null);
-			return aggregateDescribe;
-		}
-
-		public Build publishRawValues() {
-			builder.publishRawValues = true;
-			return builder.build;
-		}
-
-		public sim.monitor.Monitor build() {
-			return builder.build();
-		}
-
-		public RateDescribe add(TimeUnit timeUnit, int multiplier, String name) {
-			builder.addRate(timeUnit, multiplier, name);
-			return rateDescribe;
-		}
-
-		public RateDescribe add(TimeUnit timeUnit, int multiplier) {
-			builder.addRate(timeUnit, multiplier, null);
-			return rateDescribe;
-		}
-
-		public Rates publishAggregate() {
-			lastAggregation.setForcePublication(true);
-			return rates;
-		}
 	};
 
 	private Build build = new Build() {
@@ -637,16 +547,23 @@ public class Builder {
 	private Builder() {
 	}
 
-	public static MonitorDescribe Monitor(String name) {
+	public static Monitor Monitor(String name) {
 		Builder builder = new Builder();
 		builder.name = name;
-		return builder.monitorDescribe;
+		return builder.monitor;
+	}
+
+	public static Monitor Monitor(String name, String description) {
+		Builder builder = new Builder();
+		builder.name = name;
+		builder.description = description;
+		return builder.monitor;
 	}
 
 	private sim.monitor.Monitor build() {
 		sim.monitor.Monitor monitor = new sim.monitor.Monitor(name,
-				description, publishRawValues,
-				tagValues, filterInstances, aggregationInstances, rateInstances);
+				description, publishRawValues, tagValues, filterInstances,
+				rateInstances);
 		HitProcessor.instance().acceptMonitor(monitor);
 		return monitor;
 	}
@@ -665,34 +582,49 @@ public class Builder {
 		filterInstances.add(filter);
 	}
 
-	private void addAggregation(Aggregation aggregation, String name) {
-		if (aggregationInstances.contains(aggregation)) {
-			lastAggregation = aggregationInstances.get(aggregationInstances.lastIndexOf(aggregation));
-			lastAggregation.setName(name);
-			return;
+	private TimePeriod makeTimePeriod(TimeUnit timeUnit, int multiplier) {
+		TimePeriod timePeriod = null;
+		if (timeUnit != null && multiplier > 0) {
+			timePeriod = new TimePeriod(timeUnit, multiplier);
 		}
-		aggregation.setName(name);
-		aggregationInstances.add(aggregation);
-		lastAggregation = aggregation;
+		return timePeriod;
 	}
 
-	private void addRate(TimeUnit timeUnit, int multiplier, String name) {
-		if (!rateInstances.containsKey(lastAggregation)) {
-			rateInstances.put(lastAggregation,
-					new ArrayList<sim.monitor.Rate>());
-		}
-		List<sim.monitor.Rate> rates = rateInstances
-				.get(lastAggregation);
-		sim.monitor.Rate rate = new sim.monitor.Rate(lastAggregation,
-				new TimePeriod(timeUnit, multiplier), name,
-				null);
-		if (rates.contains(rate)) {
-			rate = rates.get(rates.lastIndexOf(rate));
-			rate.setName(name);
-			lastRate = rate;
+	private void addSumRate(TimeUnit timeUnit, int multiplier,
+			String name, String description) {
+		addRate(new sim.monitor.Sum(makeTimePeriod(timeUnit, multiplier), name,
+				description));
+	}
+
+	private void addCountRate(TimeUnit timeUnit, int multiplier, String name,
+			String description) {
+		addRate(new sim.monitor.Count(makeTimePeriod(timeUnit, multiplier),
+				name, description));
+	}
+
+	private void addAverageRate(TimeUnit timeUnit, int multiplier, String name,
+			String description) {
+		addRate(new sim.monitor.Average(makeTimePeriod(timeUnit, multiplier),
+				name, description));
+	}
+
+	private void addMinRate(TimeUnit timeUnit, int multiplier, String name,
+			String description) {
+		addRate(new sim.monitor.Min(makeTimePeriod(timeUnit, multiplier), name,
+				description));
+	}
+
+	private void addMaxRate(TimeUnit timeUnit, int multiplier, String name,
+			String description) {
+		addRate(new sim.monitor.Max(makeTimePeriod(timeUnit, multiplier), name,
+				description));
+	}
+
+	private void addRate(Rate rate) {
+		if (rateInstances.contains(rate)) {
 			return;
 		}
-		rates.add(rate);
-		lastRate = rate;
+		rateInstances.add(rate);
 	}
+
 }

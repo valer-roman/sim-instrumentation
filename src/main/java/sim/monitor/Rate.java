@@ -15,20 +15,18 @@ import sim.monitor.timing.TimePeriod;
  * @author val
  *
  */
-public class Rate extends Publisher {
+public abstract class Rate extends Publisher {
 
 	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
 			.getLogger(Rate.class);
 
-	private Aggregation aggregation;
+	private Monitor monitor;
+
 	private TimePeriod rateTime;
 
-	private long rateTimeInMillis;
+	private long rateTimeInMillis = 0;
 
-	private Long count = new Long(0);
-	private Object sum = new Long(0);
-
-	private Object result;
+	private Object result = new Long(0);
 
 	private Map<Long, Hit> hits = new ConcurrentHashMap<Long, Hit>();
 
@@ -36,13 +34,31 @@ public class Rate extends Publisher {
 
 	protected Collection<Hit> resultHits = new ArrayList<Hit>();
 
-	public Rate(Aggregation aggregation, TimePeriod rateTime, String name,
-			String description) {
-		this.rateTime = rateTime;
-		this.aggregation = aggregation;
-		this.rateTimeInMillis = this.rateTime.getSeconds() * 1000;
+	abstract Object computeAggregate(Object result, Object value);
 
-		RateScheduler.instance().registerRate(this);
+	public Rate(TimePeriod rateTime, String name, String description) {
+		super(name, description);
+
+		if (rateTime != null) {
+			this.rateTime = rateTime;
+			this.rateTimeInMillis = this.rateTime.getSeconds() * 1000;
+			RateScheduler.instance().registerRate(this);
+		}
+	}
+
+	/**
+	 * @return the monitor
+	 */
+	public Monitor getMonitor() {
+		return monitor;
+	}
+
+	/**
+	 * @param monitor
+	 *            the monitor to set
+	 */
+	public void setMonitor(Monitor monitor) {
+		this.monitor = monitor;
 	}
 
 	/**
@@ -53,26 +69,12 @@ public class Rate extends Publisher {
 	}
 
 	/**
-	 * @param rateTime the rateTime to set
+	 * @param rateTime
+	 *            the rateTime to set
 	 */
 	public void setRateTime(TimePeriod rateTime) {
 		this.rateTime = rateTime;
 		this.rateTimeInMillis = this.rateTime.getSeconds() * 1000;
-	}
-
-	/**
-	 * @return the aggregate
-	 */
-	public Aggregation getAggregation() {
-		return aggregation;
-	}
-
-	/**
-	 * @param aggregate
-	 *            the aggregate to set
-	 */
-	public void setAggregation(Aggregation aggregation) {
-		this.aggregation = aggregation;
 	}
 
 	/*
@@ -81,42 +83,78 @@ public class Rate extends Publisher {
 	 * @see sim.monitor.Statistic#getSuffix()
 	 */
 	@Override
-	public String getSuffix() {
-		return rateTime.toString();
+	String getSuffix() {
+		if (rateTime != null) {
+			return rateTime.toString();
+		}
+		return null;
 	}
 
-	public void hit(Collection<Hit> hits) {
+	protected void resetValues() {
+		result = new Long(0);
+	}
+
+	protected void hitRate(Collection<Hit> hits) {
 		for (Hit hit : hits) {
+			long timestamp = 0;
+			Object value = hit.getValue();
 			if (lastTimestampMark == 0) {
 				lastTimestampMark = hit.getTimestamp();
 			}
 			if ((hit.getTimestamp() - lastTimestampMark) > rateTimeInMillis) {
 				System.out.println("RESET");
 				lastTimestampMark = lastTimestampMark + rateTimeInMillis;
-				// this.timestamps.add(timestamp);
-				count = new Long(0);
-				sum = new Long(0);
-				result = new Long(0);
-				// continue;
+				resetValues();
 			}
-			long timestamp = lastTimestampMark + rateTimeInMillis;
-			if (aggregation instanceof Sum) {
-				result = MeasureUtil.sum(result, hit.getValue());
-			} else if (aggregation instanceof Sum) {
-				result = MeasureUtil.sum(result, new Long(1));
-			} else if (aggregation instanceof Min) {
-				result = MeasureUtil.min(result, hit.getValue());
-			} else if (aggregation instanceof Max) {
-				result = MeasureUtil.max(result, hit.getValue());
-			} else if (aggregation instanceof Average) {
-				count = count + 1;
-				sum = MeasureUtil.sum(sum, hit.getValue());
-				result = MeasureUtil.divide(sum, count);
-				logger.info("test : " + count + "," + sum + "," + result);
-			}
+			timestamp = lastTimestampMark + rateTimeInMillis;
+			result = computeAggregate(result, value);
 			this.hits.put(timestamp, new Hit(timestamp, result));
 			logger.info("put in map : " + timestamp + "," + result);
 		}
+	}
+
+	protected void hitAggregation(Collection<Hit> hits) {
+		for (Hit hit : hits) {
+			long timestamp = 0;
+			Object value = hit.getValue();
+			timestamp = Math.max(timestamp, hit.getTimestamp());
+			result = computeAggregate(result, value);
+			this.resultHits.add(new Hit(timestamp, result));
+		}
+	}
+
+	public void hit(Collection<Hit> hits) {
+		if (rateTimeInMillis > 0) {
+			hitRate(hits);
+		} else {
+			hitAggregation(hits);
+		}
+		/*
+		for (Hit hit : hits) {
+			long timestamp = 0;
+			Object value = hit.getValue();
+			if (rateTimeInMillis > 0) {
+				if (lastTimestampMark == 0) {
+					lastTimestampMark = hit.getTimestamp();
+				}
+				if ((hit.getTimestamp() - lastTimestampMark) > rateTimeInMillis) {
+					System.out.println("RESET");
+					lastTimestampMark = lastTimestampMark + rateTimeInMillis;
+					resetValues();
+				}
+				timestamp = lastTimestampMark + rateTimeInMillis;
+			} else {
+				timestamp = Math.max(timestamp, hit.getTimestamp());
+			}
+			result = computeAggregate(result, value);
+			if (rateTimeInMillis > 0) {
+				this.hits.put(timestamp, new Hit(timestamp, result));
+				logger.info("put in map : " + timestamp + "," + result);
+			} else {
+				this.resultHits.add(new Hit(timestamp, result));
+			}
+		}
+		 */
 	}
 
 	/*
@@ -128,17 +166,12 @@ public class Rate extends Publisher {
 	public void publish() {
 		String name = null;
 		if (this.getName() == null) {
-			if (aggregation.getName() == null) {
-				name = aggregation.getMonitor().getName() + " "
-						+ this.getSuffix();
-			} else {
-				name = aggregation.getName() + " " + this.getSuffix();
-			}
+			name = monitor.getName() + " " + this.getSuffix();
 		} else {
 			name = this.getName();
 		}
 		SubscribeUpdater.instance().updateAllSubscribers(resultHits,
-				aggregation.getMonitor().getTags(), name, getDescription());
+				monitor.getTags(), name, getDescription());
 		resultHits.clear();
 	}
 

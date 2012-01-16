@@ -3,6 +3,8 @@
  */
 package sim.monitor;
 
+import sim.monitor.timing.TimePeriod;
+
 
 
 /**
@@ -10,7 +12,11 @@ package sim.monitor;
  * @author val
  * 
  */
-class Count extends Aggregation {
+class Count extends Rate {
+
+	public Count(TimePeriod rateTime, String name, String description) {
+		super(rateTime, name, description);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -18,8 +24,13 @@ class Count extends Aggregation {
 	 * @see sim.monitor.publishers.Aggregation#getSuffix()
 	 */
 	@Override
-	public String getSuffix() {
-		return "COUNT";
+	String getSuffix() {
+		String suffix = super.getSuffix();
+		if (suffix == null) {
+			return "COUNT";
+		} else {
+			return "COUNT/" + suffix;
+		}
 	}
 
 	/*

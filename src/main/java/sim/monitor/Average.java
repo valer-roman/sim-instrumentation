@@ -3,6 +3,8 @@
  */
 package sim.monitor;
 
+import sim.monitor.timing.TimePeriod;
+
 
 
 /**
@@ -10,10 +12,14 @@ package sim.monitor;
  * @author val
  * 
  */
-class Average extends Aggregation {
+class Average extends Rate {
 
 	private Long count = new Long(0);
 	private Object sum = new Long(0);
+
+	public Average(TimePeriod rateTime, String name, String description) {
+		super(rateTime, name, description);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -22,9 +28,24 @@ class Average extends Aggregation {
 	 */
 	@Override
 	public String getSuffix() {
-		return "AVG";
+		String suffix = super.getSuffix();
+		if (suffix == null) {
+			return "AVG";
+		} else {
+			return "AVG/" + suffix;
+		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see sim.monitor.Rate#resetValues()
+	 */
+	@Override
+	protected void resetValues() {
+		count = new Long(0);
+		sum = new Long(0);
+	}
 
 	/*
 	 * (non-Javadoc)

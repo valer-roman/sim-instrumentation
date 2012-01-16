@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -51,9 +49,8 @@ public class Monitor extends Publisher {
 	protected Tags tags;
 
 	private List<Filter> filters = new ArrayList<Filter>();
+	private List<Rate> rates = new ArrayList<Rate>();
 	private boolean forcePublishRawValues = false;
-
-	private List<Aggregation> aggregations = new ArrayList<Aggregation>();
 
 	private BlockingQueue<Hit> hits = new LinkedBlockingQueue<Hit>();
 
@@ -61,24 +58,14 @@ public class Monitor extends Publisher {
 
 	Monitor(String name, String description, boolean publishRawValues,
 			List<String> tags, List<Filter> filters,
-			List<Aggregation> aggregations,
-			Map<Aggregation, List<sim.monitor.Rate>> rates) {
-		this.name = name;
-		this.description = description;
+			List<sim.monitor.Rate> rates) {
+		super(name, description);
 		this.forcePublishRawValues = publishRawValues;
 		this.tags = new Tags(tags.toArray(new String[0]));
 		this.filters = filters;
-		this.aggregations = aggregations;
-		for (Entry<Aggregation, List<Rate>> entry : rates.entrySet()) {
-			Aggregation aggregation = this.aggregations.get(this.aggregations
-					.lastIndexOf(entry.getKey()));
-			aggregation.setRates(entry.getValue());
-		}
-		for (Aggregation aggregation : this.aggregations) {
-			aggregation.setMonitor(this);
-			// for (Rate rate : aggregation.getRates()) {
-			// rate.scheduler();
-			// }
+		this.rates = rates;
+		for (Rate rate : this.rates) {
+			rate.setMonitor(this);
 		}
 	}
 
@@ -157,21 +144,14 @@ public class Monitor extends Publisher {
 
 		tmpHits.addAll(hits);
 
-		if (this.aggregations.isEmpty() || forcePublishRawValues) {
+		if (this.rates.isEmpty() || forcePublishRawValues) {
 			publish();
 		}
 
 		// process data with publishers
-		for (Aggregation aggregation : aggregations) {
-			aggregation.hit(hits);
-			if (aggregation.getRates().isEmpty()
-					|| aggregation.isForcePublication()) {
-				aggregation.publish();
-			}
-			for (Rate rate : aggregation.getRates()) {
-				rate.hit(hits);
-				rate.publish();
-			}
+		for (Rate rate : rates) {
+			rate.hit(hits);
+			rate.publish();
 		}
 
 	}

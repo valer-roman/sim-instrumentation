@@ -3,6 +3,8 @@
  */
 package sim.monitor;
 
+import sim.monitor.timing.TimePeriod;
+
 
 
 /**
@@ -10,7 +12,11 @@ package sim.monitor;
  * @author val
  * 
  */
-class Min extends Aggregation {
+class Min extends Rate {
+
+	public Min(TimePeriod rateTime, String name, String description) {
+		super(rateTime, name, description);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -18,8 +24,13 @@ class Min extends Aggregation {
 	 * @see sim.monitor.publishers.Aggregation#getSuffix()
 	 */
 	@Override
-	public String getSuffix() {
-		return "MIN";
+	String getSuffix() {
+		String suffix = super.getSuffix();
+		if (suffix == null) {
+			return "MIN";
+		} else {
+			return "MIN/" + suffix;
+		}
 	}
 
 	/*

@@ -30,6 +30,8 @@ public class HitProcessor {
 			this.hitTasks[i] = new HitProcessorTask();
 			this.hitTasks[i].start();
 		}
+		// FIXME add shutdown hook
+		// Runtime.getRuntime().addShutdownHook(hook);
 	}
 
 	public void acceptMonitor(Monitor monitor) {
