@@ -128,6 +128,8 @@ public class Builder {
 
 	public interface Build {
 		public sim.monitor.Monitor build();
+
+		public sim.monitor.Timer buildTimer();
 	}
 
 
@@ -147,6 +149,15 @@ public class Builder {
 			return builder.build();
 		}
 
+		/*
+		 * (non-Javadoc)
+		 *
+		 * @see sim.monitor.Builder.Build#buildTimer()
+		 */
+		public Timer buildTimer() {
+			return builder.buildTimer();
+		}
+
 		public Tags tags() {
 			return tags;
 		}
@@ -156,6 +167,15 @@ public class Builder {
 
 		public sim.monitor.Monitor build() {
 			return builder.build();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 *
+		 * @see sim.monitor.Builder.Build#buildTimer()
+		 */
+		public Timer buildTimer() {
+			return builder.buildTimer();
 		}
 
 		public Filters filters() {
@@ -172,6 +192,15 @@ public class Builder {
 
 		public sim.monitor.Monitor build() {
 			return builder.build();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 *
+		 * @see sim.monitor.Builder.Build#buildTimer()
+		 */
+		public Timer buildTimer() {
+			return builder.buildTimer();
 		}
 
 		public Rates rates() {
@@ -199,6 +228,15 @@ public class Builder {
 			return builder.build();
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see sim.monitor.Builder.Build#buildTimer()
+		 */
+		public Timer buildTimer() {
+			return builder.buildTimer();
+		}
+
 		public Build publishRawValues() {
 			builder.publishRawValues = true;
 			return build;
@@ -206,7 +244,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addSum()
 		 */
 		public Rates addSum() {
@@ -216,7 +254,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addSum(java.lang.String)
 		 */
 		public Rates addSum(String name) {
@@ -226,7 +264,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addSum(java.lang.String,
 		 * java.lang.String)
 		 */
@@ -237,7 +275,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addSum(sim.monitor.timing.TimeUnit,
 		 * int)
 		 */
@@ -248,7 +286,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addSum(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String)
 		 */
@@ -259,7 +297,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addSum(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String, java.lang.String)
 		 */
@@ -271,7 +309,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addCount()
 		 */
 		public Rates addCount() {
@@ -281,7 +319,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addCount(java.lang.String)
 		 */
 		public Rates addCount(String name) {
@@ -291,7 +329,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addCount(java.lang.String,
 		 * java.lang.String)
 		 */
@@ -302,7 +340,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addCount(sim.monitor.timing.TimeUnit,
 		 * int)
 		 */
@@ -313,7 +351,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addCount(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String)
 		 */
@@ -324,7 +362,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addCount(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String, java.lang.String)
 		 */
@@ -336,7 +374,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addAverage()
 		 */
 		public Rates addAverage() {
@@ -346,7 +384,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addAverage(java.lang.String)
 		 */
 		public Rates addAverage(String name) {
@@ -356,7 +394,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addAverage(java.lang.String,
 		 * java.lang.String)
 		 */
@@ -367,7 +405,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see
 		 * sim.monitor.Builder.Rates#addAverage(sim.monitor.timing.TimeUnit,
 		 * int)
@@ -379,7 +417,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see
 		 * sim.monitor.Builder.Rates#addAverage(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String)
@@ -391,7 +429,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see
 		 * sim.monitor.Builder.Rates#addAverage(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String, java.lang.String)
@@ -404,7 +442,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMin()
 		 */
 		public Rates addMin() {
@@ -414,7 +452,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMin(java.lang.String)
 		 */
 		public Rates addMin(String name) {
@@ -424,7 +462,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMin(java.lang.String,
 		 * java.lang.String)
 		 */
@@ -435,7 +473,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMin(sim.monitor.timing.TimeUnit,
 		 * int)
 		 */
@@ -446,7 +484,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMin(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String)
 		 */
@@ -457,7 +495,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMin(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String, java.lang.String)
 		 */
@@ -469,7 +507,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMax()
 		 */
 		public Rates addMax() {
@@ -479,7 +517,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMax(java.lang.String)
 		 */
 		public Rates addMax(String name) {
@@ -489,7 +527,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMax(java.lang.String,
 		 * java.lang.String)
 		 */
@@ -500,7 +538,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMax(sim.monitor.timing.TimeUnit,
 		 * int)
 		 */
@@ -511,7 +549,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMax(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String)
 		 */
@@ -522,7 +560,7 @@ public class Builder {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see sim.monitor.Builder.Rates#addMax(sim.monitor.timing.TimeUnit,
 		 * int, java.lang.String, java.lang.String)
 		 */
@@ -538,6 +576,10 @@ public class Builder {
 
 		public sim.monitor.Monitor build() {
 			return builder.build();
+		}
+
+		public sim.monitor.Timer buildTimer() {
+			return new Timer(builder.build());
 		}
 
 	};
@@ -566,6 +608,10 @@ public class Builder {
 				rateInstances);
 		HitProcessor.instance().acceptMonitor(monitor);
 		return monitor;
+	}
+
+	private sim.monitor.Timer buildTimer() {
+		return new Timer(builder.build());
 	}
 
 	private void addTag(String tag) {

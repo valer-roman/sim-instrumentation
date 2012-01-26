@@ -22,7 +22,7 @@ public class HitTestCase extends TestCase {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	@Override
@@ -134,6 +134,12 @@ public class HitTestCase extends TestCase {
 		}
 
 		checkHitThreadsDone();
+//		try {
+//			Thread.sleep(100000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 		assertNotNull(MockSubscriber.instance);
 		assertTrue(MockSubscriber.instance.values.size() > 0);

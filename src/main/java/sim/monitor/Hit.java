@@ -3,6 +3,7 @@
  */
 package sim.monitor;
 
+
 /**
  * @author val
  *
@@ -11,10 +12,12 @@ public class Hit {
 
 	private long timestamp;
 	private Object value;
+	private Context context;
 
-	public Hit(long timestamp, Object value) {
+	public Hit(long timestamp, Object value, Context context) {
 		this.timestamp = timestamp;
 		this.value = value;
+		this.context = context;
 	}
 
 	/**
@@ -45,6 +48,21 @@ public class Hit {
 	 */
 	public void setValue(Object value) {
 		this.value = value;
+	}
+
+	/**
+	 * @return the context
+	 */
+	public Context getContext() {
+		return context;
+	}
+
+	/**
+	 * @param context
+	 *            the context to set
+	 */
+	public void setContext(Context context) {
+		this.context = context;
 	}
 
 }

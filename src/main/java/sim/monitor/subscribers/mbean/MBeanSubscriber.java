@@ -25,9 +25,9 @@ import sim.monitor.subscribers.Subscriber;
 /**
  * The hit values are published to JMX Server through this subscriber. For each
  * container a dynamic MBean is registered.
- * 
+ *
  * @author val
- * 
+ *
  */
 public class MBeanSubscriber implements Subscriber {
 
@@ -46,6 +46,8 @@ public class MBeanSubscriber implements Subscriber {
 		StringBuilder sb = new StringBuilder(Tags.DOMAIN);
 		if (tags.getTags().length > 0) {
 			sb.append(":");
+		} else {
+			sb.append(":name=Monitor");
 		}
 		for (int i = 0; i < tags.getTags().length; i++) {
 			if (i > 0) {
@@ -66,10 +68,10 @@ public class MBeanSubscriber implements Subscriber {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection,
 	 * sim.monitor.Tags, java.lang.String, java.lang.String)
-	 * 
+	 *
 	 * FIXME maybe we could avoid somehow the synchronized ...
 	 */
 	public synchronized void update(Collection<Hit> hits, Tags tags,
@@ -77,6 +79,7 @@ public class MBeanSubscriber implements Subscriber {
 			String description) {
 		logger.info("updating mbean for attribute " + name);
 		for (Hit hit : hits) {
+			logger.info("Context:" + hit.getContext());
 			DynamicMBean dynMBean = null;
 			if (!mbeans.containsKey(tags)) {
 				dynMBean = new DynamicMBean();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -16,28 +17,28 @@ import sim.monitor.transformers.Filter;
 import sim.monitor.transformers.TimeIntervalSampler;
 
 /**
- * 
+ *
  * A monitor is an entity used by developers that are monitoring their
  * application to extract runtime information about business actions.
- * 
+ *
  * Each monitor is defined inside a container. For example a container could be
  * "com.test.monitoring:module=User Interface,component=Login"
- * 
+ *
  * Once the monitored application has new relevant data for a monitor it should
  * call one of the hit methods of this class.
- * 
+ *
  * This is the core of the monitor, here are the configurations, the
  * transformers and the publishers of the monitor saved.
- * 
+ *
  * Once a hit is received from the Monitor class it is transmitted to this
  * class. Here there are two process types running on the hit : the
  * transformation and the publications. The transformation processes filter,
  * change or detail the data received with the hit. The publication processes
  * are preparing the data for visualization with external or internal
  * visualization tools.
- * 
+ *
  * @author val
- * 
+ *
  */
 public class Monitor extends Publisher {
 
@@ -84,19 +85,19 @@ public class Monitor extends Publisher {
 		this.tags = tags;
 	}
 
-	void acceptHit(long timestamp, Object value) {
-		hits.add(new Hit(timestamp, value));
+	void acceptHit(long timestamp, Object value, Context context) {
+		hits.add(new Hit(timestamp, value, context));
 		HitProcessor.instance().signalHit(this);
 	}
 
 	/*
 	 * Establishes a picking out interval on the monitors value. A new value is
 	 * elected only after this interval has passed since the last value
-	 * 
+	 *
 	 * @param timeUnit the time unit (seconds, minutes, hours ...)
-	 * 
+	 *
 	 * @param timeMultiplier the time multiplier
-	 * 
+	 *
 	 * @return this monitor
 	 */
 	void useTimeIntervalSampler(TimeUnit timeUnit, int timeMultiplier) {
@@ -107,9 +108,9 @@ public class Monitor extends Publisher {
 	/*
 	 * Set on monitor wheter to keep the received values or to perform a delta
 	 * difference on current valu and last value.
-	 * 
+	 *
 	 * @param delta boolean setting if delta is active or not
-	 * 
+	 *
 	 * @return this monitor
 	 */
 	Monitor useDelta() {
@@ -142,9 +143,8 @@ public class Monitor extends Publisher {
 			hits = filter.transform(hits);
 		}
 
-		tmpHits.addAll(hits);
-
 		if (this.rates.isEmpty() || forcePublishRawValues) {
+			tmpHits.addAll(hits);
 			publish();
 		}
 
@@ -158,7 +158,7 @@ public class Monitor extends Publisher {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Publisher#publish()
 	 */
 	@Override
@@ -171,7 +171,7 @@ public class Monitor extends Publisher {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Publisher#getSuffix()
 	 */
 	@Override
@@ -183,43 +183,48 @@ public class Monitor extends Publisher {
 	/**
 	 * Called by instrumentation (code in monitored application that triggers monitors activation) when a new value is available for the monitor.
 	 * This method attaches a timestamp to the recorded value and sends it further to processor.
-	 * 
+	 *
 	 * @param value the value registered in monitored application. Depending on monitor type can have different types (Long, Double ...)
 	 */
 	public void hit(Long value) {
 		long timestamp = System.currentTimeMillis();
-		this.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value, new Context());
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit(Double value) {
 		long timestamp = System.currentTimeMillis();
-		this.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value, new Context());
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit(Integer value) {
 		long timestamp = System.currentTimeMillis();
-		this.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value, new Context());
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit(String value) {
 		long timestamp = System.currentTimeMillis();
-		this.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value, new Context());
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit(Date value) {
 		long timestamp = System.currentTimeMillis();
-		this.acceptHit(timestamp, value);
+		this.acceptHit(timestamp, value, new Context());
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
 	public void hit() {
 		long timestamp = System.currentTimeMillis();
-		this.acceptHit(timestamp, new Long(1));
+		this.acceptHit(timestamp, new Long(1), new Context());
 		// threadPool.execute(new Processor(timestamp, new Long(1)));
+	}
+
+	public void hit(Map<String, Object> context) {
+		long timestamp = System.currentTimeMillis();
+		this.acceptHit(timestamp, new Long(1), new Context(context));
 	}
 
 }

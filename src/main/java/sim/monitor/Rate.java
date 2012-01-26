@@ -26,9 +26,9 @@ public abstract class Rate extends Publisher {
 
 	private long rateTimeInMillis = 0;
 
-	private Object result = new Long(0);
+	private ContextEntryValue result = new ContextEntryValue();
 
-	private Map<Long, Hit> hits = new ConcurrentHashMap<Long, Hit>();
+	private Map<Long, ContextEntryValue> hits = new ConcurrentHashMap<Long, ContextEntryValue>();
 
 	private long lastTimestampMark = 0;
 
@@ -79,7 +79,7 @@ public abstract class Rate extends Publisher {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Statistic#getSuffix()
 	 */
 	@Override
@@ -91,7 +91,7 @@ public abstract class Rate extends Publisher {
 	}
 
 	protected void resetValues() {
-		result = new Long(0);
+		result.reset();
 	}
 
 	protected void hitRate(Collection<Hit> hits) {
@@ -107,9 +107,18 @@ public abstract class Rate extends Publisher {
 				resetValues();
 			}
 			timestamp = lastTimestampMark + rateTimeInMillis;
-			result = computeAggregate(result, value);
-			this.hits.put(timestamp, new Hit(timestamp, result));
-			logger.info("put in map : " + timestamp + "," + result);
+			for (ContextEntry contextEntry : hit.getContext()
+					.withUndefinedKey()) {
+				Object aValue = result.get(contextEntry);
+				result.put(contextEntry, computeAggregate(aValue, value));
+				if (!this.hits.containsKey(timestamp)) {
+					this.hits.put(timestamp, new ContextEntryValue());
+				}
+				this.hits.get(timestamp).put(contextEntry,
+						result.get(contextEntry));
+				logger.info("put in map : " + timestamp + ","
+						+ result.get(contextEntry));
+			}
 		}
 	}
 
@@ -117,9 +126,22 @@ public abstract class Rate extends Publisher {
 		for (Hit hit : hits) {
 			long timestamp = 0;
 			Object value = hit.getValue();
+//			Map<Object, Context> valueMap = new HashMap<Object, Context>();
 			timestamp = Math.max(timestamp, hit.getTimestamp());
-			result = computeAggregate(result, value);
-			this.resultHits.add(new Hit(timestamp, result));
+			for (ContextEntry contextEntry : hit.getContext()
+					.withUndefinedKey()) {
+				Object aValue = result.get(contextEntry);
+				result.put(contextEntry, computeAggregate(aValue, value));
+//				if (!valueMap.containsKey(aValue)) {
+//					valueMap.put(aValue, new Context());
+//				}
+//				valueMap.get(aValue).add(contextEntry);
+			}
+//			for (Object aValue : valueMap.keySet()) {
+//				this.resultHits.add(new Hit(timestamp, aValue, valueMap
+//						.get(aValue)));
+//			}
+			this.resultHits.addAll(result.hitsForChanges(timestamp));
 		}
 	}
 
@@ -129,37 +151,11 @@ public abstract class Rate extends Publisher {
 		} else {
 			hitAggregation(hits);
 		}
-		/*
-		for (Hit hit : hits) {
-			long timestamp = 0;
-			Object value = hit.getValue();
-			if (rateTimeInMillis > 0) {
-				if (lastTimestampMark == 0) {
-					lastTimestampMark = hit.getTimestamp();
-				}
-				if ((hit.getTimestamp() - lastTimestampMark) > rateTimeInMillis) {
-					System.out.println("RESET");
-					lastTimestampMark = lastTimestampMark + rateTimeInMillis;
-					resetValues();
-				}
-				timestamp = lastTimestampMark + rateTimeInMillis;
-			} else {
-				timestamp = Math.max(timestamp, hit.getTimestamp());
-			}
-			result = computeAggregate(result, value);
-			if (rateTimeInMillis > 0) {
-				this.hits.put(timestamp, new Hit(timestamp, result));
-				logger.info("put in map : " + timestamp + "," + result);
-			} else {
-				this.resultHits.add(new Hit(timestamp, result));
-			}
-		}
-		 */
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.publishers.Publisher#publish()
 	 */
 	@Override
@@ -184,7 +180,8 @@ public abstract class Rate extends Publisher {
 		}
 
 		Long hitTimestamp = null;
-		Hit resultHit = null;
+		ContextEntryValue resultHit = null;
+		Long resultTimestamp = null;
 		while (hitTimestamp == null || currentTime >= hitTimestamp) {
 			if (hitTimestamp != null) {
 				if (!hits.containsKey(hitTimestamp)) {
@@ -192,8 +189,9 @@ public abstract class Rate extends Publisher {
 					continue;
 				}
 				resultHit = hits.get(hitTimestamp);
+				resultTimestamp = hitTimestamp;
 				hits.remove(hitTimestamp);
-				logger.info("got from map value : " + resultHit.getValue()
+				logger.info("got from map values : " + resultHit
 						+ " and remove timestamp : " + hitTimestamp);
 				hitTimestamp = hitTimestamp + rateTimeInMillis;
 			} else {
@@ -205,14 +203,14 @@ public abstract class Rate extends Publisher {
 				}
 				logger.info("got oldest timestamp in map : " + hitTimestamp);
 				if (hitTimestamp == null) {
-					// FIXME should update sbuscribers with value 0, no
+					// FIXME should update subscribers with value 0, no
 					// data
 					break;
 				}
 			}
 		}
 		if (resultHit != null) {
-			resultHits.add(resultHit);
+			this.resultHits.addAll(resultHit.hitsForChanges(resultTimestamp));
 			publish();
 		}
 	}

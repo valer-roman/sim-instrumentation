@@ -19,7 +19,7 @@ public class DeltaTransformer implements Filter {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Transformer#transform(sim.monitor.Hit)
 	 */
 	public Collection<Hit> transform(Collection<Hit> hits) {
@@ -32,7 +32,7 @@ public class DeltaTransformer implements Filter {
 				value = lastData.getValue();
 			}
 			Hit newHit = new Hit(hit.getTimestamp(), MeasureUtil.difference(
-					hit.getValue(), value));
+					hit.getValue(), value), hit.getContext());
 			result.add(newHit);
 			lastData = hit;
 		}
@@ -41,7 +41,7 @@ public class DeltaTransformer implements Filter {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -51,7 +51,7 @@ public class DeltaTransformer implements Filter {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override

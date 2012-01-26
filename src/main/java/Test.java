@@ -1,11 +1,15 @@
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import sim.monitor.Builder;
 import sim.monitor.Monitor;
+import sim.monitor.Timer;
 import sim.monitor.timing.TimeUnit;
 
 /**
- * 
+ *
  */
 
 /**
@@ -53,12 +57,15 @@ public class Test {
 		Monitor counter = Builder.Monitor("Counter test", "counter desc")
 				.tags()
 					.add("testing")
+					.add("counter")
 				.filters()
 				.rates()
 					.addCount()
 				.build();
 
-		counter.hit();
+		Map<String, Object> context = new HashMap<String, Object>();
+		context.put("orderid", new Long(1001));
+		counter.hit(context);
 		Thread.sleep(20);
 		counter.hit();
 
@@ -84,6 +91,14 @@ public class Test {
 		mlv.hit(new Long(30));
 		// Thread.sleep(1000);
 		mlv.hit(new Long(5));
+
+		Thread.sleep(1000);
+
+		Timer timer = Builder.Monitor("sadsa")
+				.buildTimer();
+		timer.startTimer();
+		Thread.sleep(20);
+		timer.stopTimerAndHit();
 
 		Thread.sleep(1000);
 
