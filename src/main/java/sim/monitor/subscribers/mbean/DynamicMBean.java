@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package sim.monitor.subscribers.mbean;
 
@@ -24,7 +24,13 @@ import javax.management.ReflectionException;
 public class DynamicMBean implements javax.management.DynamicMBean {
 
 	private Map<String, AttributeData> attributes = new HashMap<String, AttributeData>();
-	
+
+	private String description;
+
+	DynamicMBean(String description) {
+		this.description = description;
+	}
+
 	/**
 	 * @return the attributes
 	 */
@@ -81,7 +87,9 @@ public class DynamicMBean implements javax.management.DynamicMBean {
                     false); // isIs
         }
 
-		MBeanInfo mbInfo = new MBeanInfo(this.getClass().getName(), "description asd", mbAttributeInfos, null, null, null);
+		MBeanInfo mbInfo = new MBeanInfo(this.getClass().getName(),
+				this.description == null ? "default description"
+						: this.description, mbAttributeInfos, null, null, null);
 		return mbInfo;
 	}
 

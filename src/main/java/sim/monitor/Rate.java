@@ -162,12 +162,13 @@ public abstract class Rate extends Publisher {
 	public void publish() {
 		String name = null;
 		if (this.getName() == null) {
-			name = monitor.getName() + " " + this.getSuffix();
+			name = this.getSuffix();
 		} else {
 			name = this.getName();
 		}
 		SubscribeUpdater.instance().updateAllSubscribers(resultHits,
-				monitor.getTags(), name, getDescription());
+				monitor.getTags(), monitor.getName(), monitor.getDescription(),
+				name, getDescription());
 		resultHits.clear();
 	}
 

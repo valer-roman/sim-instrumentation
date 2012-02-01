@@ -8,7 +8,7 @@ import java.math.BigInteger;
 
 /**
  * @author val
- * 
+ *
  */
 public class MeasureUtil {
 
@@ -135,4 +135,63 @@ public class MeasureUtil {
 		}// FIXME BigInteger might be bigger than Long !!!
 		return null;
 	}
+
+	public static boolean isGreaterOrEqualThan(Object value1, Object value2) {
+		return isGreaterThan(value1, value2) || isEqual(value1, value2);
+	}
+
+	public static boolean isGreaterThan(Object value1, Object value2) {
+		return !isLessThan(value1, value2) && !isEqual(value1, value2);
+	}
+
+	public static boolean isLessOrEqualThan(Object value1, Object value2) {
+		return isLessThan(value1, value2) || isEqual(value1, value2);
+	}
+
+	public static boolean isLessThan(Object value1, Object value2) {
+		if (!isNumeric(value1)) {
+			return false;
+		}
+		if (!isNumeric(value2)) {
+			return false;
+		}
+
+		if (isInteger(value1)) {
+			if (isInteger(value2)) {
+				return toInteger(value1) < toInteger(value2);
+			} else {
+				return toInteger(value1) < toDouble(value2);
+			}
+		} else {
+			if (isInteger(value2)) {
+				return toDouble(value1) < toInteger(value2);
+			} else {
+				return toDouble(value1) < toDouble(value2);
+			}
+		}
+	}
+
+	public static boolean isEqual(Object value1, Object value2) {
+		if (!isNumeric(value1)) {
+			return false;
+		}
+		if (!isNumeric(value2)) {
+			return false;
+		}
+
+		if (isInteger(value1)) {
+			if (isInteger(value2)) {
+				return toInteger(value1) == toInteger(value2);
+			} else {
+				return toInteger(value1) == toDouble(value2).longValue();
+			}
+		} else {
+			if (isInteger(value2)) {
+				return toDouble(value1) == toInteger(value2).doubleValue();
+			} else {
+				return toDouble(value1) == toDouble(value2);
+			}
+		}
+	}
+
 }

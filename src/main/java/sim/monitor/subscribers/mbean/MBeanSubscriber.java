@@ -4,8 +4,10 @@
 package sim.monitor.subscribers.mbean;
 
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +20,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
+import sim.monitor.ContextEntry;
 import sim.monitor.Hit;
 import sim.monitor.Tags;
 import sim.monitor.subscribers.Subscriber;
@@ -36,25 +39,27 @@ public class MBeanSubscriber implements Subscriber {
 
 	private MBeanServer mbServer;
 
-	private Map<Tags, DynamicMBean> mbeans = new HashMap<Tags, DynamicMBean>();
+	private Map<ObjectName, DynamicMBean> mbeans = new HashMap<ObjectName, DynamicMBean>();
 
 	public MBeanSubscriber() {
 		mbServer = ManagementFactory.getPlatformMBeanServer();
 	}
 
-	private static ObjectName fromTags(Tags tags) {
+	private static ObjectName fromTags(Tags tags, String monitorName) {
 		StringBuilder sb = new StringBuilder(Tags.DOMAIN);
+		sb.append(":");
 		if (tags.getTags().length > 0) {
-			sb.append(":");
-		} else {
-			sb.append(":name=Monitor");
-		}
-		for (int i = 0; i < tags.getTags().length; i++) {
-			if (i > 0) {
-				sb.append(",");
+			sb.append("tags=");
+			for (int i = 0; i < tags.getTags().length; i++) {
+				if (i > 0) {
+					sb.append(";");
+				}
+				String tag = tags.getTags()[i];
+				sb.append(tag);
 			}
-			sb.append("tag" + i + "=" + tags.getTags()[i]);
+			sb.append(",");
 		}
+		sb.append("name=" + toObjectName(monitorName));
 		try {
 			return new ObjectName(sb.toString());
 		} catch (MalformedObjectNameException e) {
@@ -66,6 +71,10 @@ public class MBeanSubscriber implements Subscriber {
 		}
 	}
 
+	private static String toObjectName(String monitorName) {
+		return monitorName;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -75,64 +84,74 @@ public class MBeanSubscriber implements Subscriber {
 	 * FIXME maybe we could avoid somehow the synchronized ...
 	 */
 	public synchronized void update(Collection<Hit> hits, Tags tags,
-			String name,
+			String monitorName, String monitorDescription, String name,
 			String description) {
-		logger.info("updating mbean for attribute " + name);
+		logger.info("updating mbean for attribute " + monitorName);
 		for (Hit hit : hits) {
 			logger.info("Context:" + hit.getContext());
-			DynamicMBean dynMBean = null;
-			if (!mbeans.containsKey(tags)) {
-				dynMBean = new DynamicMBean();
-				mbeans.put(tags, dynMBean);
-			} else {
-				dynMBean = mbeans.get(tags);
-			}
-			boolean containsAttribute = dynMBean.getAttributes().containsKey(
-					name);
 
-			ObjectName objectName = fromTags(tags);
+			List<String> attributes = new ArrayList<String>();
+			attributes.add(name);
+			for (ContextEntry entry : hit.getContext()) {
+				attributes.add(name + "." + entry.getKey() + "."
+						+ entry.getValue());
+			}
+
+			ObjectName objectName = fromTags(tags, monitorName);
 			if (objectName == null) {
 				return;
 			}
-			Set<ObjectInstance> instances = mbServer.queryMBeans(objectName, null);
-			ObjectInstance mb = null;
-
-			if (!containsAttribute && !instances.isEmpty()) {
-				mb = instances.iterator().next();
-				try {
-					mbServer.unregisterMBean(mb.getObjectName());
-				} catch (MBeanRegistrationException e) {
-					logger.error(
-							"MBean could not be unregistered for ObjectName: "
-									+ mb.getObjectName(), e);
-				} catch (InstanceNotFoundException e) {
-					logger.error(
-							"Instance for objectName " + mb.getObjectName()
-							+ " could not be found!", e);
-				}
+			DynamicMBean dynMBean = null;
+			if (!mbeans.containsKey(objectName)) {
+				dynMBean = new DynamicMBean(monitorDescription);
+				mbeans.put(objectName, dynMBean);
+			} else {
+				dynMBean = mbeans.get(objectName);
 			}
 
+			for (String attributeName : attributes) {
+				boolean containsAttribute = dynMBean.getAttributes()
+						.containsKey(attributeName);
 
-			dynMBean.getAttributes().put(
-					name,
-					new AttributeData(description, hit
-							.getValue().toString(),
-							hit.getValue().getClass()
-							.getName()));
+				Set<ObjectInstance> instances = mbServer.queryMBeans(
+						objectName, null);
+				ObjectInstance mb = null;
 
-			if (!containsAttribute || instances.isEmpty()) {
-				try {
-					mb = mbServer.registerMBean(dynMBean, objectName);
-				} catch (InstanceAlreadyExistsException e) {
-					logger.error("Instance for objectName " + objectName
-							+ " already exists!", e);
-				} catch (NotCompliantMBeanException e) {
-					logger.error("The mbean for " + objectName
-							+ " is not compliant!", e);
-				} catch (MBeanRegistrationException e) {
-					logger.error(
-							"MBean could not be registered for ObjectName: "
-									+ mb.getObjectName(), e);
+				if (!containsAttribute && !instances.isEmpty()) {
+					mb = instances.iterator().next();
+					try {
+						mbServer.unregisterMBean(mb.getObjectName());
+					} catch (MBeanRegistrationException e) {
+						logger.error(
+								"MBean could not be unregistered for ObjectName: "
+										+ mb.getObjectName(), e);
+					} catch (InstanceNotFoundException e) {
+						logger.error(
+								"Instance for objectName " + mb.getObjectName()
+										+ " could not be found!", e);
+					}
+				}
+
+				dynMBean.getAttributes().put(
+						attributeName,
+						new AttributeData(description, hit.getValue()
+								.toString(), hit.getValue().getClass()
+								.getName()));
+
+				if (!containsAttribute || instances.isEmpty()) {
+					try {
+						mb = mbServer.registerMBean(dynMBean, objectName);
+					} catch (InstanceAlreadyExistsException e) {
+						logger.error("Instance for objectName " + objectName
+								+ " already exists!", e);
+					} catch (NotCompliantMBeanException e) {
+						logger.error("The mbean for " + objectName
+								+ " is not compliant!", e);
+					} catch (MBeanRegistrationException e) {
+						logger.error(
+								"MBean could not be registered for ObjectName: "
+										+ objectName, e);
+					}
 				}
 			}
 		}

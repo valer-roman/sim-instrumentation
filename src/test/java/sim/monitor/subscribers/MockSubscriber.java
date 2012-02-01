@@ -26,12 +26,12 @@ public class MockSubscriber implements Subscriber {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection,
 	 * sim.monitor.Tags, java.lang.String, java.lang.String)
 	 */
-	public void update(Collection<Hit> hits, Tags tags, String name,
-			String description) {
+	public void update(Collection<Hit> hits, Tags tags, String monitorName,
+			String monitorDescription, String name, String description) {
 		Hit hit = hits.iterator().next();
 		System.out.println(hit.getValue());
 		values.add(hit.getValue());

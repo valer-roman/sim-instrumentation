@@ -2,6 +2,7 @@ package sim.monitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,7 @@ public class Monitor extends Publisher {
 			List<sim.monitor.Rate> rates) {
 		super(name, description);
 		this.forcePublishRawValues = publishRawValues;
+		Collections.sort(tags);
 		this.tags = new Tags(tags.toArray(new String[0]));
 		this.filters = filters;
 		this.rates = rates;
@@ -164,8 +166,7 @@ public class Monitor extends Publisher {
 	@Override
 	public void publish() {
 		SubscribeUpdater.instance().updateAllSubscribers(tmpHits, getTags(),
-				name,
-				getDescription());
+				name, getDescription(), "value", "raw value");
 		tmpHits.clear();
 	}
 

@@ -13,9 +13,9 @@ import sim.monitor.Tags;
 
 /**
  * Keep track of all subscribers, inform them about updates
- * 
+ *
  * @author val
- * 
+ *
  */
 public class SubscribeUpdater {
 
@@ -32,9 +32,11 @@ public class SubscribeUpdater {
 	}
 
 	public void updateAllSubscribers(Collection<Hit> hits, Tags tags,
-			String name, String description) {
+			String monitorName, String monitorDescription, String name,
+			String description) {
 		for (Subscriber s : subscribers) {
-			s.update(hits, tags, name, description);
+			s.update(hits, tags, monitorName, monitorDescription, name,
+					description);
 		}
 	}
 

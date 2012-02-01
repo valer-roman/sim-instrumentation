@@ -14,7 +14,7 @@ import sim.monitor.Tags;
  */
 public interface Subscriber {
 
-	public void update(Collection<Hit> hits, Tags tags, String name,
-			String description);
+	public void update(Collection<Hit> hits, Tags tags, String monitorName,
+			String monitorDescription, String name, String description);
 
 }

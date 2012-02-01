@@ -64,21 +64,28 @@ public class Test {
 				.build();
 
 		Map<String, Object> context = new HashMap<String, Object>();
+		context.put("customerid", new Long(1));
 		context.put("orderid", new Long(1001));
 		counter.hit(context);
+		context.put("orderid", new Long(1002));
 		Thread.sleep(20);
+		counter.hit(context);
+		Thread.sleep(10);
 		counter.hit();
 
 		Monitor mlv = Builder
 				.Monitor("Value Long Test", "long value test descr")
 				.tags()
 					.add("testing")
+					.add("counter")
 				.filters()
 					.addDelta()
 				.rates()
 					.addAverage()
 					.addAverage(TimeUnit.Second, 1)
+				.publishRawValues()
 				.build();
+
 		//mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");
 		// mlv.setRateStatistic(Type.sum, TimeUnit.Second, 1);
 		//mlv.countRate(TimeUnit.Second, 1);
@@ -94,7 +101,11 @@ public class Test {
 
 		Thread.sleep(1000);
 
+
 		Timer timer = Builder.Monitor("sadsa")
+				.tags()
+					.add("counter")
+				.add("testing")
 				.buildTimer();
 		timer.startTimer();
 		Thread.sleep(20);
