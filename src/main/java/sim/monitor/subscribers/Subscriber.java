@@ -5,6 +5,7 @@ package sim.monitor.subscribers;
 
 import java.util.Collection;
 
+import sim.monitor.Aggregation;
 import sim.monitor.Hit;
 import sim.monitor.Tags;
 
@@ -15,6 +16,7 @@ import sim.monitor.Tags;
 public interface Subscriber {
 
 	public void update(Collection<Hit> hits, Tags tags, String monitorName,
-			String monitorDescription, String name, String description);
+			String monitorDescription, String name, String description,
+			Aggregation aggregation);
 
 }

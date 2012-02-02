@@ -25,35 +25,6 @@ public class Test {
 
 		Thread.sleep(2000);
 
-		/*
-		 * Monitor monitor =
-		 * MonitorBuilder.useCategory("sim.monitoring:type=Testing")
-		 * .setPickoutInterval(TimeUnit, int) .addDefaultStatistic(Sum)
-		 * //.addDefaultRateStatistic(Sum, TimeUnit, int) . .build(name,
-		 * description);
-		 */
-
-		/*
-		Builder.Monitor("Counter")
-			.description("This is a counter")
-			.tags()
-				.add("Backend")
-				.add("Ordering")
-			.transformers()
-				.addDelta()
-				.add(Class<? extends Transformer>)
-			.statistics()
-				.addCount()
-				.addAverage("Average")
-					.description("The average")
-				.add(Class)
-			.build();
-
-		T instance = Builder.tag("sadsad").tag("sasda");
-
-		c.hit();
-		 */
-
 		Monitor counter = Builder.Monitor("Counter test", "counter desc")
 				.tags()
 					.add("testing")
@@ -68,6 +39,12 @@ public class Test {
 		context.put("orderid", new Long(1001));
 		counter.hit(context);
 		context.put("orderid", new Long(1002));
+		Thread.sleep(20);
+		counter.hit(context);
+		context.put("orderid", new Long(1003));
+		Thread.sleep(20);
+		counter.hit(context);
+		context.put("orderid", new Long(1004));
 		Thread.sleep(20);
 		counter.hit(context);
 		Thread.sleep(10);
@@ -100,7 +77,6 @@ public class Test {
 		mlv.hit(new Long(5));
 
 		Thread.sleep(1000);
-
 
 		Timer timer = Builder.Monitor("sadsa")
 				.tags()

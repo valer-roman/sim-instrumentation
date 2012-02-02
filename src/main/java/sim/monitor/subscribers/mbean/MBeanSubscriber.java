@@ -4,10 +4,8 @@
 package sim.monitor.subscribers.mbean;
 
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,7 +18,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import sim.monitor.ContextEntry;
+import sim.monitor.Aggregation;
 import sim.monitor.Hit;
 import sim.monitor.Tags;
 import sim.monitor.subscribers.Subscriber;
@@ -40,6 +38,8 @@ public class MBeanSubscriber implements Subscriber {
 	private MBeanServer mbServer;
 
 	private Map<ObjectName, DynamicMBean> mbeans = new HashMap<ObjectName, DynamicMBean>();
+
+	private Map<String, ContextAttributesTracker> monitorContextAttrTracker = new HashMap<String, ContextAttributesTracker>();
 
 	public MBeanSubscriber() {
 		mbServer = ManagementFactory.getPlatformMBeanServer();
@@ -85,18 +85,10 @@ public class MBeanSubscriber implements Subscriber {
 	 */
 	public synchronized void update(Collection<Hit> hits, Tags tags,
 			String monitorName, String monitorDescription, String name,
-			String description) {
-		logger.info("updating mbean for attribute " + monitorName);
+			String description, Aggregation aggregation) {
+		logger.info("updating mbean " + monitorName + " for attribute " + name);
 		for (Hit hit : hits) {
-			logger.info("Context:" + hit.getContext());
-
-			List<String> attributes = new ArrayList<String>();
-			attributes.add(name);
-			for (ContextEntry entry : hit.getContext()) {
-				attributes.add(name + "." + entry.getKey() + "."
-						+ entry.getValue());
-			}
-
+			logger.info("treat hit " + hit);
 			ObjectName objectName = fromTags(tags, monitorName);
 			if (objectName == null) {
 				return;
@@ -107,6 +99,72 @@ public class MBeanSubscriber implements Subscriber {
 				mbeans.put(objectName, dynMBean);
 			} else {
 				dynMBean = mbeans.get(objectName);
+			}
+
+			if (!monitorContextAttrTracker.containsKey(monitorName)) {
+				monitorContextAttrTracker.put(monitorName,
+						new ContextAttributesTracker());
+			}
+			ContextAttributesTracker contextAttrTracker = monitorContextAttrTracker
+					.get(monitorName);
+			AttributeChanges attrChanges = contextAttrTracker.add(hit, name,
+					aggregation);
+
+			Set<ObjectInstance> instances = mbServer.queryMBeans(objectName,
+					null);
+			ObjectInstance mb = null;
+
+			if (attrChanges.hasNewOrRemovedAttributes() && !instances.isEmpty()) {
+				mb = instances.iterator().next();
+				try {
+					mbServer.unregisterMBean(mb.getObjectName());
+				} catch (MBeanRegistrationException e) {
+					logger.error(
+							"MBean could not be unregistered for ObjectName: "
+									+ mb.getObjectName(), e);
+				} catch (InstanceNotFoundException e) {
+					logger.error(
+							"Instance for objectName " + mb.getObjectName()
+									+ " could not be found!", e);
+				}
+			}
+
+			for (Attribute attr : attrChanges.getAddedAndModifiedAttributes()) {
+				Object value = attr.getValue();
+				dynMBean.getAttributes().put(
+						attr.getName(),
+						new AttributeData(description, value.toString(), value
+								.getClass().getName()));
+			}
+			for (String attr : attrChanges.getRemovedAttributes()) {
+				dynMBean.getAttributes().remove(attr);
+			}
+
+			if (attrChanges.hasNewOrRemovedAttributes() || instances.isEmpty()) {
+				try {
+					mb = mbServer.registerMBean(dynMBean, objectName);
+				} catch (InstanceAlreadyExistsException e) {
+					logger.error("Instance for objectName " + objectName
+							+ " already exists!", e);
+				} catch (NotCompliantMBeanException e) {
+					logger.error("The mbean for " + objectName
+							+ " is not compliant!", e);
+				} catch (MBeanRegistrationException e) {
+					logger.error(
+							"MBean could not be registered for ObjectName: "
+									+ objectName, e);
+				}
+			}
+
+			/*
+			List<String> attributes = new ArrayList<String>();
+			for (ContextEntry entry : hit.getContext()) {
+				if (entry.equals(ContextEntry.UNDEFINED)) {
+					attributes.add(name);
+				} else {
+					attributes.add(name + "." + entry.getKey() + "."
+							+ entry.getValue());
+				}
 			}
 
 			for (String attributeName : attributes) {
@@ -154,6 +212,7 @@ public class MBeanSubscriber implements Subscriber {
 					}
 				}
 			}
+			*/
 		}
 	}
 

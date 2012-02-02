@@ -12,8 +12,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 public class ContextEntry {
 
-	static final ContextEntry UNDEFINED = new ContextEntry("UNDEFINED",
-			new Object());
+	public static final Object UNDEFINED_VALUE = new Object();
+	public static final ContextEntry UNDEFINED = new ContextEntry("UNDEFINED",
+			UNDEFINED_VALUE);
 
 	private String key;
 	private Object value;

@@ -8,9 +8,9 @@ import sim.monitor.timing.TimePeriod;
 
 
 /**
- * 
+ *
  * @author val
- * 
+ *
  */
 class Min extends Rate {
 
@@ -21,6 +21,16 @@ class Min extends Rate {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see sim.monitor.Rate#getAggregation()
+	 */
+	@Override
+	Aggregation getAggregation() {
+		return Aggregation.Min;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see sim.monitor.publishers.Aggregation#getSuffix()
 	 */
 	@Override
@@ -35,7 +45,7 @@ class Min extends Rate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.AbstractAggregation#computeAggregate(java.lang.Object,
 	 * java.lang.Object)
 	 */

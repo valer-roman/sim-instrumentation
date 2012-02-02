@@ -8,9 +8,9 @@ import sim.monitor.timing.TimePeriod;
 
 
 /**
- * 
+ *
  * @author val
- * 
+ *
  */
 class Sum extends Rate {
 
@@ -21,6 +21,16 @@ class Sum extends Rate {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see sim.monitor.Rate#getAggregation()
+	 */
+	@Override
+	Aggregation getAggregation() {
+		return Aggregation.Sum;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see sim.monitor.publishers.Aggregation#getSuffix()
 	 */
 	@Override
@@ -35,7 +45,7 @@ class Sum extends Rate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.AbstractAggregation#computeAggregate(java.lang.Object,
 	 * java.lang.Object)
 	 */

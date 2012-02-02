@@ -8,9 +8,9 @@ import sim.monitor.timing.TimePeriod;
 
 
 /**
- * 
+ *
  * @author val
- * 
+ *
  */
 class Count extends Rate {
 
@@ -21,6 +21,16 @@ class Count extends Rate {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see sim.monitor.Rate#getAggregation()
+	 */
+	@Override
+	Aggregation getAggregation() {
+		return Aggregation.Count;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see sim.monitor.publishers.Aggregation#getSuffix()
 	 */
 	@Override
@@ -35,7 +45,7 @@ class Count extends Rate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.AbstractAggregation#computeAggregate(java.lang.Object,
 	 * java.lang.Object)
 	 */

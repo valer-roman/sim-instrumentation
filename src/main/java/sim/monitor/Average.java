@@ -8,9 +8,9 @@ import sim.monitor.timing.TimePeriod;
 
 
 /**
- * 
+ *
  * @author val
- * 
+ *
  */
 class Average extends Rate {
 
@@ -24,6 +24,16 @@ class Average extends Rate {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see sim.monitor.Rate#getAggregation()
+	 */
+	@Override
+	Aggregation getAggregation() {
+		return Aggregation.Average;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see sim.monitor.publishers.Aggregation#getSuffix()
 	 */
 	@Override
@@ -38,7 +48,7 @@ class Average extends Rate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Rate#resetValues()
 	 */
 	@Override
@@ -49,7 +59,7 @@ class Average extends Rate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Aggregation#computeAggregate(java.lang.Object,
 	 * java.lang.Object)
 	 */

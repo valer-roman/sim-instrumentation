@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import sim.monitor.Aggregation;
 import sim.monitor.Hit;
 import sim.monitor.Tags;
 
@@ -33,10 +34,10 @@ public class SubscribeUpdater {
 
 	public void updateAllSubscribers(Collection<Hit> hits, Tags tags,
 			String monitorName, String monitorDescription, String name,
-			String description) {
+			String description, Aggregation aggregation) {
 		for (Subscriber s : subscribers) {
 			s.update(hits, tags, monitorName, monitorDescription, name,
-					description);
+					description, aggregation);
 		}
 	}
 

@@ -42,9 +42,7 @@ public class ContextEntryValue {
 			if (!valueContexts.containsKey(aValue)) {
 				valueContexts.put(aValue, new Context());
 			}
-			if (contextEntry != ContextEntry.UNDEFINED) {
-				valueContexts.get(aValue).add(contextEntry);
-			}
+			valueContexts.get(aValue).add(contextEntry);
 		}
 
 		Collection<Hit> hits = new ArrayList<Hit>();

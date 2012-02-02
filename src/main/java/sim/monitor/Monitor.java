@@ -166,7 +166,8 @@ public class Monitor extends Publisher {
 	@Override
 	public void publish() {
 		SubscribeUpdater.instance().updateAllSubscribers(tmpHits, getTags(),
-				name, getDescription(), "value", "raw value");
+				name, getDescription(), "value", "raw value",
+				Aggregation.Average);
 		tmpHits.clear();
 	}
 

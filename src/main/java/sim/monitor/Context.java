@@ -20,9 +20,11 @@ public final class Context extends HashSet<ContextEntry> {
 	private static final long serialVersionUID = 1L;
 
 	Context() {
+		this.add(ContextEntry.UNDEFINED);
 	}
 
 	Context(Map<String, Object> context) {
+		this();
 		if (context == null) {
 			return;
 		}
@@ -32,6 +34,7 @@ public final class Context extends HashSet<ContextEntry> {
 	}
 
 	Context(Context context) {
+		this();
 		if (context == null) {
 			return;
 		}
@@ -40,11 +43,13 @@ public final class Context extends HashSet<ContextEntry> {
 		}
 	}
 
+	/*
 	Context withUndefinedKey() {
 		Context context = new Context(this);
 		context.add(ContextEntry.UNDEFINED);
 		return context;
 	}
+	*/
 
 	/*
 	 * (non-Javadoc)

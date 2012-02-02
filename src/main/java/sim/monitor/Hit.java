@@ -65,4 +65,14 @@ public class Hit {
 		this.context = context;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ts:" + timestamp + ",value:" + value + ",context:" + context;
+	}
+
 }

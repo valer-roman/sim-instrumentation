@@ -20,11 +20,19 @@ public class MeasureUtil {
 			return value1;
 		}
 
-		if (isInteger(value1) && isInteger(value2)) {
-			return toInteger(value1) + toInteger(value2);
+		if (isInteger(value1)) {
+			if (isInteger(value2)) {
+				return toInteger(value1) + toInteger(value2);
+			} else {
+				return toInteger(value1) + toDouble(value2);
+			}
+		} else {
+			if (isInteger(value2)) {
+				return toDouble(value1) + toInteger(value2);
+			} else {
+				return toDouble(value1) + toDouble(value2);
+			}
 		}
-
-		return toDouble(value1) + toDouble(value2);
 	}
 
 	public static Object difference(Object value1, Object value2) {

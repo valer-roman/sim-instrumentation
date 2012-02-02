@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import sim.monitor.Aggregation;
 import sim.monitor.Hit;
 import sim.monitor.Tags;
 
@@ -31,7 +32,8 @@ public class MockSubscriber implements Subscriber {
 	 * sim.monitor.Tags, java.lang.String, java.lang.String)
 	 */
 	public void update(Collection<Hit> hits, Tags tags, String monitorName,
-			String monitorDescription, String name, String description) {
+			String monitorDescription, String name, String description,
+			Aggregation aggregation) {
 		Hit hit = hits.iterator().next();
 		System.out.println(hit.getValue());
 		values.add(hit.getValue());

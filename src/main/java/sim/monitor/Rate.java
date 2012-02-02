@@ -36,6 +36,8 @@ public abstract class Rate extends Publisher {
 
 	abstract Object computeAggregate(Object result, Object value);
 
+	abstract Aggregation getAggregation();
+
 	public Rate(TimePeriod rateTime, String name, String description) {
 		super(name, description);
 
@@ -107,8 +109,8 @@ public abstract class Rate extends Publisher {
 				resetValues();
 			}
 			timestamp = lastTimestampMark + rateTimeInMillis;
-			for (ContextEntry contextEntry : hit.getContext()
-					.withUndefinedKey()) {
+			for (ContextEntry contextEntry : hit.getContext()) {
+					//.withUndefinedKey()) {
 				Object aValue = result.get(contextEntry);
 				result.put(contextEntry, computeAggregate(aValue, value));
 				if (!this.hits.containsKey(timestamp)) {
@@ -126,21 +128,12 @@ public abstract class Rate extends Publisher {
 		for (Hit hit : hits) {
 			long timestamp = 0;
 			Object value = hit.getValue();
-//			Map<Object, Context> valueMap = new HashMap<Object, Context>();
 			timestamp = Math.max(timestamp, hit.getTimestamp());
-			for (ContextEntry contextEntry : hit.getContext()
-					.withUndefinedKey()) {
+			for (ContextEntry contextEntry : hit.getContext()) {
+					//.withUndefinedKey()) {
 				Object aValue = result.get(contextEntry);
 				result.put(contextEntry, computeAggregate(aValue, value));
-//				if (!valueMap.containsKey(aValue)) {
-//					valueMap.put(aValue, new Context());
-//				}
-//				valueMap.get(aValue).add(contextEntry);
 			}
-//			for (Object aValue : valueMap.keySet()) {
-//				this.resultHits.add(new Hit(timestamp, aValue, valueMap
-//						.get(aValue)));
-//			}
 			this.resultHits.addAll(result.hitsForChanges(timestamp));
 		}
 	}
@@ -168,7 +161,7 @@ public abstract class Rate extends Publisher {
 		}
 		SubscribeUpdater.instance().updateAllSubscribers(resultHits,
 				monitor.getTags(), monitor.getName(), monitor.getDescription(),
-				name, getDescription());
+				name, getDescription(), getAggregation());
 		resultHits.clear();
 	}
 
