@@ -11,6 +11,7 @@ import java.util.ServiceLoader;
 import sim.monitor.Aggregation;
 import sim.monitor.Hit;
 import sim.monitor.Tags;
+import sim.monitor.timing.TimePeriod;
 
 /**
  * Keep track of all subscribers, inform them about updates
@@ -34,10 +35,10 @@ public class SubscribeUpdater {
 
 	public void updateAllSubscribers(Collection<Hit> hits, Tags tags,
 			String monitorName, String monitorDescription, String name,
-			String description, Aggregation aggregation) {
+			String description, TimePeriod rateInterval, Aggregation aggregation) {
 		for (Subscriber s : subscribers) {
 			s.update(hits, tags, monitorName, monitorDescription, name,
-					description, aggregation);
+					description, rateInterval, aggregation);
 		}
 	}
 

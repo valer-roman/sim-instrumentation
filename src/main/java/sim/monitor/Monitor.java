@@ -1,5 +1,6 @@
 package sim.monitor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -166,8 +167,7 @@ public class Monitor extends Publisher {
 	@Override
 	public void publish() {
 		SubscribeUpdater.instance().updateAllSubscribers(tmpHits, getTags(),
-				name, getDescription(), "value", "raw value",
-				Aggregation.Average);
+				name, getDescription(), "value", "raw value", null, null);
 		tmpHits.clear();
 	}
 
@@ -200,13 +200,7 @@ public class Monitor extends Publisher {
 		// threadPool.execute(new Processor(timestamp, value));
 	}
 
-	public void hit(Integer value) {
-		long timestamp = System.currentTimeMillis();
-		this.acceptHit(timestamp, value, new Context());
-		// threadPool.execute(new Processor(timestamp, value));
-	}
-
-	public void hit(String value) {
+	public void hit(BigDecimal value) {
 		long timestamp = System.currentTimeMillis();
 		this.acceptHit(timestamp, value, new Context());
 		// threadPool.execute(new Processor(timestamp, value));

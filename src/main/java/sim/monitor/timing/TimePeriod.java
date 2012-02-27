@@ -1,9 +1,11 @@
 /**
- * 
+ *
  */
 package sim.monitor.timing;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -17,7 +19,7 @@ public class TimePeriod {
 
 	private List<TimePeriodEntry> entries = new ArrayList<TimePeriod.TimePeriodEntry>();
 
-	private class TimePeriodEntry {
+	private class TimePeriodEntry implements Comparable<TimePeriodEntry> {
 		private TimeUnit timeUnit;
 		private int timeMultiplier;
 
@@ -32,7 +34,22 @@ public class TimePeriod {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
+		public int compareTo(TimePeriodEntry o) {
+			Comparator<TimeUnit> timeUnitComparator = timeUnit.new TimeUnitComparator();
+			int timeUnitComparation = timeUnitComparator.compare(timeUnit, o.timeUnit);
+			if (timeUnitComparation == 0) {
+				return (int) Math.signum(timeMultiplier - o.timeMultiplier);
+			} else {
+				return timeUnitComparation;
+			}
+		}
+
+		/*
+		 * (non-Javadoc)
+		 *
 		 * @see java.lang.Object#hashCode()
 		 */
 		@Override
@@ -43,7 +60,7 @@ public class TimePeriod {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
 		@Override
@@ -84,7 +101,7 @@ public class TimePeriod {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -98,7 +115,7 @@ public class TimePeriod {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -120,7 +137,7 @@ public class TimePeriod {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -128,6 +145,20 @@ public class TimePeriod {
 		StringBuilder sb = new StringBuilder();
 		for (TimePeriodEntry tpe : entries) {
 			sb.append(tpe.timeMultiplier + tpe.timeUnit.toShortString());
+		}
+		return sb.toString();
+	}
+
+	public String toReadableString() {
+		StringBuilder sb = new StringBuilder();
+		List<TimePeriodEntry> sorted = new ArrayList<TimePeriodEntry>();
+		sorted.addAll(entries);
+		Collections.sort(sorted);
+		for (TimePeriodEntry tpe : sorted) {
+			if (sb.length() != 0) {
+				sb.append(", ");
+			}
+			sb.append(tpe.timeMultiplier + " " + tpe.timeUnit.toLongString());
 		}
 		return sb.toString();
 	}

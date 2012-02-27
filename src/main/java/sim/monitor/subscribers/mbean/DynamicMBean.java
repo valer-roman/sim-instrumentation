@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
+import javax.management.Descriptor;
+import javax.management.ImmutableDescriptor;
 import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
@@ -59,7 +61,7 @@ public class DynamicMBean implements javax.management.DynamicMBean {
 	public AttributeList getAttributes(String[] arg0) {
        AttributeList list = new AttributeList();
         for (Entry<String, AttributeData> entry : attributes.entrySet()) {
-            String dvt = entry.getValue().getValue();
+			Object dvt = entry.getValue().getValue();
             if (dvt != null) {
             	list.add(new Attribute(entry.getKey(), dvt));
             }
@@ -78,18 +80,22 @@ public class DynamicMBean implements javax.management.DynamicMBean {
             AttributeData attrData = attributes.get(name);
             String description = attrData.getDescription();
             //String dvt = attrData.getValue();
-            mbAttributeInfos[i] = new MBeanAttributeInfo(
-                    name,
-                    attrData.getType(), //"java.lang.String",
+			Descriptor descriptor = new ImmutableDescriptor("openType="
+					+ attrData.getSimpleType().toString(), "originalType="
+					+ attrData.getOriginalType().getName());
+			mbAttributeInfos[i] = new MBeanAttributeInfo(name, attrData
+					.getOriginalType().getName(), // "java.lang.String",
                     description,
                     true,   // isReadable
-                    false,   // isWritable
-                    false); // isIs
+					false, // isWritable
+					false, descriptor); // isIs
         }
-
+		Descriptor descriptor = new ImmutableDescriptor("immutableinfo=false",
+				"mxbean=true");
 		MBeanInfo mbInfo = new MBeanInfo(this.getClass().getName(),
 				this.description == null ? "default description"
-						: this.description, mbAttributeInfos, null, null, null);
+						: this.description, mbAttributeInfos, null, null, null,
+				descriptor);
 		return mbInfo;
 	}
 
@@ -108,7 +114,7 @@ public class DynamicMBean implements javax.management.DynamicMBean {
 	public void setAttribute(Attribute arg0) throws AttributeNotFoundException,
 			InvalidAttributeValueException, MBeanException, ReflectionException {
 		// TODO Auto-generated method stub
-
+		return;
 	}
 
 	/* (non-Javadoc)

@@ -67,7 +67,7 @@ public class AttributeChanges {
 		for (Interval interval : intervals) {
 			String attrName = aName + interval.toString();
 			Attribute attribute = new Attribute(attrName, interval.getValue());
-			added.add(attribute);
+			modified.add(attribute);
 		}
 	}
 

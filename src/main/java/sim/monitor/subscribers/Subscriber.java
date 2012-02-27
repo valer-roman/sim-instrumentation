@@ -8,6 +8,7 @@ import java.util.Collection;
 import sim.monitor.Aggregation;
 import sim.monitor.Hit;
 import sim.monitor.Tags;
+import sim.monitor.timing.TimePeriod;
 
 /**
  * @author val
@@ -17,6 +18,6 @@ public interface Subscriber {
 
 	public void update(Collection<Hit> hits, Tags tags, String monitorName,
 			String monitorDescription, String name, String description,
-			Aggregation aggregation);
+			TimePeriod rateInterval, Aggregation aggregation);
 
 }

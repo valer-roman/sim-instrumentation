@@ -1,11 +1,21 @@
 
 
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
+import javax.management.JMX;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
+import javax.management.Query;
 
 import sim.monitor.Builder;
 import sim.monitor.Monitor;
 import sim.monitor.Timer;
+import sim.monitor.subscribers.mbean.MonitoringMXBean;
 import sim.monitor.timing.TimeUnit;
 
 /**
@@ -25,10 +35,11 @@ public class Test {
 
 		Thread.sleep(2000);
 
-		Monitor counter = Builder.Monitor("Counter test", "counter desc")
+		Monitor counter = Builder
+				.Monitor("Placed orders", "The number of placed orders")
 				.tags()
-					.add("testing")
-					.add("counter")
+					.add("order")
+					.add("new")
 				.filters()
 				.rates()
 					.addCount()
@@ -51,10 +62,11 @@ public class Test {
 		counter.hit();
 
 		Monitor mlv = Builder
-				.Monitor("Value Long Test", "long value test descr")
+				.Monitor("Visitors increase pace",
+						"Keep track of the site's visitors increase pace")
 				.tags()
-					.add("testing")
-					.add("counter")
+					.add("visitors")
+					.add("shop")
 				.filters()
 					.addDelta()
 				.rates()
@@ -74,18 +86,53 @@ public class Test {
 		Thread.sleep(1001);
 		mlv.hit(new Long(30));
 		// Thread.sleep(1000);
-		mlv.hit(new Long(5));
-
+		mlv.hit(new Long(65));
+/*
+		Random rand = new Random(System.currentTimeMillis());
+		for (int i = 1; i < 1000; i++) {
+			Thread.sleep(1000);
+			mlv.hit(new Long(rand.nextInt(1000)));
+		}
+*/
 		Thread.sleep(1000);
 
-		Timer timer = Builder.Monitor("sadsa")
+		Timer timer = Builder.Monitor("Account creation duration")
 				.tags()
-					.add("counter")
-				.add("testing")
+					.add("account")
+					.add("new")
 				.buildTimer();
 		timer.startTimer();
 		Thread.sleep(20);
 		timer.stopTimerAndHit();
+
+		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+		MonitoringMXBean m = null;
+		try {
+			ObjectName on = new ObjectName(
+					"sim.monitoring:tags=*,name=Placed orders,*");
+
+			Set<ObjectInstance> so = mbs.queryMBeans(on, null);
+			so.isEmpty();
+
+			Set<ObjectName> objectNames = mbs.queryNames(
+					on,
+					Query.eq(Query.attr("Type"),
+							Query.value("IntegerValueMonitor")));
+			for (ObjectName o : objectNames) {
+				m = JMX.newMXBeanProxy(mbs, o,
+						MonitoringMXBean.class);
+
+				m.getAggregation();
+				m.getDescription();
+			}
+		} catch (MalformedObjectNameException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 
 		Thread.sleep(1000);
 

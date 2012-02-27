@@ -4,13 +4,16 @@
 package sim.monitor.subscribers.mbean;
 
 import java.lang.management.ManagementFactory;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -19,9 +22,11 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
 import sim.monitor.Aggregation;
+import sim.monitor.ContextEntry;
 import sim.monitor.Hit;
 import sim.monitor.Tags;
 import sim.monitor.subscribers.Subscriber;
+import sim.monitor.timing.TimePeriod;
 
 /**
  * The hit values are published to JMX Server through this subscriber. For each
@@ -37,7 +42,7 @@ public class MBeanSubscriber implements Subscriber {
 
 	private MBeanServer mbServer;
 
-	private Map<ObjectName, DynamicMBean> mbeans = new HashMap<ObjectName, DynamicMBean>();
+	private Map<ObjectName, Monitoring> mbeans = new HashMap<ObjectName, Monitoring>();
 
 	private Map<String, ContextAttributesTracker> monitorContextAttrTracker = new HashMap<String, ContextAttributesTracker>();
 
@@ -45,25 +50,18 @@ public class MBeanSubscriber implements Subscriber {
 		mbServer = ManagementFactory.getPlatformMBeanServer();
 	}
 
-	private static ObjectName fromTags(Tags tags, String monitorName) {
+	private static ObjectName fromHit(String monitorName, String type,
+			String category) {
 		StringBuilder sb = new StringBuilder(Tags.DOMAIN);
 		sb.append(":");
-		if (tags.getTags().length > 0) {
-			sb.append("tags=");
-			for (int i = 0; i < tags.getTags().length; i++) {
-				if (i > 0) {
-					sb.append(";");
-				}
-				String tag = tags.getTags()[i];
-				sb.append(tag);
-			}
-			sb.append(",");
-		}
 		sb.append("name=" + toObjectName(monitorName));
+		if (category != null && !"".equals(category)) {
+			sb.append(",category=" + category);
+		}
 		try {
 			return new ObjectName(sb.toString());
 		} catch (MalformedObjectNameException e) {
-			logger.error("Could not createObjectName for container " + tags, e);
+			logger.error("Could not createObjectName ", e);
 			return null;
 		} catch (NullPointerException e) {
 			logger.error("Null container received!", e);
@@ -73,6 +71,39 @@ public class MBeanSubscriber implements Subscriber {
 
 	private static String toObjectName(String monitorName) {
 		return monitorName;
+	}
+
+	private Monitoring createForHit(Hit hit) {
+		if (hit.getValue() instanceof Long) {
+			return new MonitoringLong();
+		} else {
+			return new MonitoringDouble();
+		}
+	}
+
+	private String typeForHit(Hit hit) {
+		if (hit.getValue() instanceof Long) {
+			return "IntegerValueMonitor";
+		} else if (hit.getValue() instanceof Double) {
+			return "DecimalValueMonitor";
+		} else if (hit.getValue() instanceof BigDecimal) {
+			return "CurrencyValueMonitor";
+		} else if (hit.getValue() instanceof Date) {
+			return "DateTimeValueMonitor";
+		}
+		return "";
+	}
+
+	private int indexOfContextComposite(
+			List<ContextComposite> contextComposites, String contextVaue) {
+		int index = 0;
+		for (ContextComposite cc : contextComposites) {
+			if (cc.getContextValue().equals(contextVaue)) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
 	}
 
 	/*
@@ -85,64 +116,97 @@ public class MBeanSubscriber implements Subscriber {
 	 */
 	public synchronized void update(Collection<Hit> hits, Tags tags,
 			String monitorName, String monitorDescription, String name,
-			String description, Aggregation aggregation) {
+			String description, TimePeriod rateInterval, Aggregation aggregation) {
 		logger.info("updating mbean " + monitorName + " for attribute " + name);
 		for (Hit hit : hits) {
 			logger.info("treat hit " + hit);
-			ObjectName objectName = fromTags(tags, monitorName);
+
+			StringBuilder category = new StringBuilder();
+			if (rateInterval != null) {
+				category.append(aggregation.name() + " rate at "
+						+ rateInterval.toReadableString() + " ("
+						+ rateInterval.toString() + aggregation.toShortString()
+						+ ")");
+			} else if (aggregation != null) {
+				category.append(aggregation.name() + " result ("
+						+ aggregation.toShortString() + ")");
+			} else {
+				category.append("Current value");
+			}
+
+			ObjectName objectName = fromHit(monitorName, typeForHit(hit),
+					category.toString());
 			if (objectName == null) {
 				return;
 			}
-			DynamicMBean dynMBean = null;
+			Monitoring monitoring = null;
 			if (!mbeans.containsKey(objectName)) {
-				dynMBean = new DynamicMBean(monitorDescription);
-				mbeans.put(objectName, dynMBean);
+				monitoring = createForHit(hit);
+				monitoring.setRateInterval(rateInterval == null ? -1
+						: rateInterval.getSeconds());
+				monitoring.setAggregation(aggregation == null ? ""
+						: aggregation.toString());
+				monitoring.setType(typeForHit(hit));
+				StringBuilder sb = new StringBuilder();
+				if (tags.getTags().length > 0) {
+					for (int i = 0; i < tags.getTags().length; i++) {
+						if (i > 0) {
+							sb.append(";");
+						}
+						String tag = tags.getTags()[i];
+						sb.append(tag);
+					}
+				}
+				monitoring.setTags(sb.toString());
+				mbeans.put(objectName, monitoring);
 			} else {
-				dynMBean = mbeans.get(objectName);
+				monitoring = mbeans.get(objectName);
 			}
 
 			if (!monitorContextAttrTracker.containsKey(monitorName)) {
 				monitorContextAttrTracker.put(monitorName,
 						new ContextAttributesTracker());
 			}
+			/*
 			ContextAttributesTracker contextAttrTracker = monitorContextAttrTracker
 					.get(monitorName);
 			AttributeChanges attrChanges = contextAttrTracker.add(hit, name,
 					aggregation);
+			 */
 
 			Set<ObjectInstance> instances = mbServer.queryMBeans(objectName,
 					null);
 			ObjectInstance mb = null;
 
-			if (attrChanges.hasNewOrRemovedAttributes() && !instances.isEmpty()) {
-				mb = instances.iterator().next();
-				try {
-					mbServer.unregisterMBean(mb.getObjectName());
-				} catch (MBeanRegistrationException e) {
-					logger.error(
-							"MBean could not be unregistered for ObjectName: "
-									+ mb.getObjectName(), e);
-				} catch (InstanceNotFoundException e) {
-					logger.error(
-							"Instance for objectName " + mb.getObjectName()
-									+ " could not be found!", e);
+			if (hit.getContext().contains(ContextEntry.UNDEFINED.getKey())) {
+				monitoring.setValue(hit.getValue());
+				monitoring.setDescription(monitorDescription);
+			}
+			for (ContextEntry ce : hit.getContext()) {
+				if (ce.equals(ContextEntry.UNDEFINED)) {
+					continue;
+				}
+				if (!monitoring.getContext().containsKey(ce.getKey())) {
+					monitoring.getContext().put(ce.getKey(),
+							new ArrayList<ContextComposite>());
+
+				}
+				List<ContextComposite> contextComposites = monitoring
+						.getContext().get(ce.getKey());
+				int indexOfContextComposite = indexOfContextComposite(
+						contextComposites, ce.getValue().toString());
+				if (indexOfContextComposite == -1) {
+					contextComposites.add(new ContextComposite(ce.getValue()
+							.toString(), hit.getValue().toString()));
+				} else {
+					contextComposites.get(indexOfContextComposite).setValue(
+							hit.getValue().toString());
 				}
 			}
 
-			for (Attribute attr : attrChanges.getAddedAndModifiedAttributes()) {
-				Object value = attr.getValue();
-				dynMBean.getAttributes().put(
-						attr.getName(),
-						new AttributeData(description, value.toString(), value
-								.getClass().getName()));
-			}
-			for (String attr : attrChanges.getRemovedAttributes()) {
-				dynMBean.getAttributes().remove(attr);
-			}
-
-			if (attrChanges.hasNewOrRemovedAttributes() || instances.isEmpty()) {
+			if (instances.isEmpty()) {
 				try {
-					mb = mbServer.registerMBean(dynMBean, objectName);
+					mb = mbServer.registerMBean(monitoring, objectName);
 				} catch (InstanceAlreadyExistsException e) {
 					logger.error("Instance for objectName " + objectName
 							+ " already exists!", e);
@@ -156,6 +220,52 @@ public class MBeanSubscriber implements Subscriber {
 				}
 			}
 
+/*
+			if (attrChanges.hasNewOrRemovedAttributes() && !instances.isEmpty()) {
+				mb = instances.iterator().next();
+				try {
+					logger.info("unregister : " + attrChanges);
+					mbServer.unregisterMBean(mb.getObjectName());
+				} catch (MBeanRegistrationException e) {
+					logger.error(
+							"MBean could not be unregistered for ObjectName: "
+									+ mb.getObjectName(), e);
+				} catch (InstanceNotFoundException e) {
+					logger.error(
+							"Instance for objectName " + mb.getObjectName()
+									+ " could not be found!", e);
+				}
+			}
+
+
+			for (Attribute attr : attrChanges.getAddedAndModifiedAttributes()) {
+				Object value = attr.getValue();
+				monitoringMXBean.getAttributes().put(
+						attr.getName(),
+								new AttributeData(description, value, value
+								.getClass()));
+			}
+			for (String attr : attrChanges.getRemovedAttributes()) {
+				monitoringMXBean.getAttributes().remove(attr);
+			}
+
+			if (attrChanges.hasNewOrRemovedAttributes() || instances.isEmpty()) {
+				try {
+					mb = mbServer.registerMBean(monitoringMXBean, objectName);
+				} catch (InstanceAlreadyExistsException e) {
+					logger.error("Instance for objectName " + objectName
+							+ " already exists!", e);
+				} catch (NotCompliantMBeanException e) {
+					logger.error("The mbean for " + objectName
+							+ " is not compliant!", e);
+				} catch (MBeanRegistrationException e) {
+					logger.error(
+							"MBean could not be registered for ObjectName: "
+									+ objectName, e);
+				}
+			}
+
+*/
 			/*
 			List<String> attributes = new ArrayList<String>();
 			for (ContextEntry entry : hit.getContext()) {

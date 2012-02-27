@@ -74,10 +74,12 @@ public class Interval {
 	private void computeValue(Object value1, Object value2) {
 		switch (getAggregation()) {
 		case Min:
-			this.value = MeasureUtil.isLessThan(value1, value2);
+			this.value = MeasureUtil.isLessThan(value1, value2) ? value1
+					: value2;
 			break;
 		case Max:
-			this.value = MeasureUtil.isGreaterThan(value1, value2);
+			this.value = MeasureUtil.isGreaterThan(value1, value2) ? value1
+					: value2;
 			break;
 		case Sum:
 			this.value = MeasureUtil.sum(value1, value2);

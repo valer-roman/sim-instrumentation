@@ -161,7 +161,7 @@ public abstract class Rate extends Publisher {
 		}
 		SubscribeUpdater.instance().updateAllSubscribers(resultHits,
 				monitor.getTags(), monitor.getName(), monitor.getDescription(),
-				name, getDescription(), getAggregation());
+				name, getDescription(), getRateTime(), getAggregation());
 		resultHits.clear();
 	}
 
