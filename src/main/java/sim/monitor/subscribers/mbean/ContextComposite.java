@@ -9,6 +9,7 @@ import java.beans.ConstructorProperties;
  * @author val
  *
  */
+// TODO define typed value, as in mbean (long, double, bigdecimal or date)
 public class ContextComposite {
 
 	private String contextValue;

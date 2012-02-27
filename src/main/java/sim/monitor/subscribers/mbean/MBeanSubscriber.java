@@ -178,7 +178,7 @@ public class MBeanSubscriber implements Subscriber {
 					null);
 			ObjectInstance mb = null;
 
-			if (hit.getContext().contains(ContextEntry.UNDEFINED.getKey())) {
+			if (hit.getContext().contains(ContextEntry.UNDEFINED)) {
 				monitoring.setValue(hit.getValue());
 				monitoring.setDescription(monitorDescription);
 			}
