@@ -5,10 +5,9 @@ package sim.monitor.subscribers;
 
 import java.util.Collection;
 
-import sim.monitor.Aggregation;
 import sim.monitor.Hit;
-import sim.monitor.Tags;
-import sim.monitor.timing.TimePeriod;
+import sim.monitor.RateNamer;
+import sim.monitor.TaggedMonitorNamer;
 
 /**
  * @author val
@@ -16,8 +15,7 @@ import sim.monitor.timing.TimePeriod;
  */
 public interface Subscriber {
 
-	public void update(Collection<Hit> hits, Tags tags, String monitorName,
-			String monitorDescription, String name, String description,
-			TimePeriod rateInterval, Aggregation aggregation);
+	public void update(Collection<Hit> hits, TaggedMonitorNamer namer,
+			RateNamer rateNamer, boolean oneMeasure);
 
 }

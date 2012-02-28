@@ -8,10 +8,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import sim.monitor.Aggregation;
 import sim.monitor.Hit;
-import sim.monitor.Tags;
-import sim.monitor.timing.TimePeriod;
+import sim.monitor.RateNamer;
+import sim.monitor.TaggedMonitorNamer;
 
 /**
  * Keep track of all subscribers, inform them about updates
@@ -33,12 +32,10 @@ public class SubscribeUpdater {
 		reloadSubscribers();
 	}
 
-	public void updateAllSubscribers(Collection<Hit> hits, Tags tags,
-			String monitorName, String monitorDescription, String name,
-			String description, TimePeriod rateInterval, Aggregation aggregation) {
+	public void updateAllSubscribers(Collection<Hit> hits,
+			TaggedMonitorNamer namer, RateNamer rateNamer, boolean oneMeasure) {
 		for (Subscriber s : subscribers) {
-			s.update(hits, tags, monitorName, monitorDescription, name,
-					description, rateInterval, aggregation);
+			s.update(hits, namer, rateNamer, oneMeasure);
 		}
 	}
 

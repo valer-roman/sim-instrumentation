@@ -23,27 +23,12 @@ class Average extends Rate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Rate#getAggregation()
 	 */
 	@Override
-	Aggregation getAggregation() {
+	public Aggregation getAggregation() {
 		return Aggregation.Average;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see sim.monitor.publishers.Aggregation#getSuffix()
-	 */
-	@Override
-	public String getSuffix() {
-		String suffix = super.getSuffix();
-		if (suffix == null) {
-			return "AVG";
-		} else {
-			return "AVG/" + suffix;
-		}
 	}
 
 	/*

@@ -3,7 +3,6 @@
  */
 package sim.monitor.subscribers.mbean;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +18,7 @@ public abstract class Monitoring implements MonitoringMXBean {
 	private long rateInterval;
 	private String aggregation;
 	private String unit;
-	private Map<String, List<ContextComposite>> context = new HashMap<String, List<ContextComposite>>();
+	private Map<String, List<ContextComposite>> context = null;
 	private String type;
 
 	/**

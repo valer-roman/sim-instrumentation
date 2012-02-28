@@ -20,27 +20,12 @@ class Min extends Rate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Rate#getAggregation()
 	 */
 	@Override
-	Aggregation getAggregation() {
+	public Aggregation getAggregation() {
 		return Aggregation.Min;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see sim.monitor.publishers.Aggregation#getSuffix()
-	 */
-	@Override
-	String getSuffix() {
-		String suffix = super.getSuffix();
-		if (suffix == null) {
-			return "MIN";
-		} else {
-			return "MIN/" + suffix;
-		}
 	}
 
 	/*

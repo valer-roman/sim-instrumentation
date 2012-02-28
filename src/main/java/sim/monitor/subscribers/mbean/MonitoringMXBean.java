@@ -26,7 +26,8 @@ public interface MonitoringMXBean {
 	public String getTags();
 
 	/**
-	 * A human readable rate interval (1 sec., 2 hours ...). Empty if missing
+	 * RAte interval in seconds
+	 *
 	 *
 	 * @return
 	 */

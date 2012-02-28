@@ -24,6 +24,8 @@ import javax.management.ObjectName;
 import sim.monitor.Aggregation;
 import sim.monitor.ContextEntry;
 import sim.monitor.Hit;
+import sim.monitor.RateNamer;
+import sim.monitor.TaggedMonitorNamer;
 import sim.monitor.Tags;
 import sim.monitor.subscribers.Subscriber;
 import sim.monitor.timing.TimePeriod;
@@ -55,7 +57,7 @@ public class MBeanSubscriber implements Subscriber {
 		StringBuilder sb = new StringBuilder(Tags.DOMAIN);
 		sb.append(":");
 		sb.append("name=" + toObjectName(monitorName));
-		if (category != null && !"".equals(category)) {
+		if (category != null) {
 			sb.append(",category=" + category);
 		}
 		try {
@@ -110,45 +112,56 @@ public class MBeanSubscriber implements Subscriber {
 	 * (non-Javadoc)
 	 *
 	 * @see sim.monitor.subscribers.Subscriber#update(java.util.Collection,
-	 * sim.monitor.Tags, java.lang.String, java.lang.String)
-	 *
-	 * FIXME maybe we could avoid somehow the synchronized ...
+	 * sim.monitor.TaggedMonitorNamer, sim.monitor.RateNamer, boolean)
 	 */
-	public synchronized void update(Collection<Hit> hits, Tags tags,
-			String monitorName, String monitorDescription, String name,
-			String description, TimePeriod rateInterval, Aggregation aggregation) {
-		logger.info("updating mbean " + monitorName + " for attribute " + name);
+	public void update(Collection<Hit> hits, TaggedMonitorNamer namer,
+			RateNamer rateNamer, boolean oneMeasure) {
+		String name = (rateNamer != null && rateNamer.getName() != null) ? rateNamer
+				.getName() : namer.getName();
+
+		logger.info("updating mbean " + name);
 		for (Hit hit : hits) {
 			logger.info("treat hit " + hit);
 
-			StringBuilder category = new StringBuilder();
-			if (rateInterval != null) {
-				category.append(aggregation.name() + " rate at "
-						+ rateInterval.toReadableString() + " ("
-						+ rateInterval.toString() + aggregation.toShortString()
-						+ ")");
-			} else if (aggregation != null) {
-				category.append(aggregation.name() + " result ("
-						+ aggregation.toShortString() + ")");
-			} else {
-				category.append("Current value");
+			TimePeriod rateInterval = rateNamer != null ? rateNamer
+					.getRateTime() : null;
+			Aggregation aggregation = rateNamer != null ? rateNamer
+					.getAggregation() : null;
+
+			String category = null;
+			if (!oneMeasure) {
+				if (rateInterval != null) {
+					category = aggregation.name() + " rate at "
+							+ rateInterval.toReadableString() + " ("
+							+ rateInterval.toString()
+							+ aggregation.toShortString() + ")";
+				} else if (aggregation != null) {
+					category = aggregation.name() + " ("
+							+ aggregation.toShortString() + ")";
+				} else {
+					category = "Gauge";
+				}
 			}
 
-			ObjectName objectName = fromHit(monitorName, typeForHit(hit),
-					category.toString());
+			ObjectName objectName = fromHit(name, typeForHit(hit), category);
 			if (objectName == null) {
 				return;
 			}
 			Monitoring monitoring = null;
 			if (!mbeans.containsKey(objectName)) {
 				monitoring = createForHit(hit);
+				String description = (rateNamer != null && rateNamer
+						.getDescription() != null) ? rateNamer
+						.getDescription() : namer.getDescription();
+				monitoring.setDescription(description);
 				monitoring.setRateInterval(rateInterval == null ? -1
 						: rateInterval.getSeconds());
 				monitoring.setAggregation(aggregation == null ? ""
 						: aggregation.toString());
 				monitoring.setType(typeForHit(hit));
 				StringBuilder sb = new StringBuilder();
-				if (tags.getTags().length > 0) {
+				Tags tags = namer.getTags();
+				if (tags != null && tags.getTags().length > 0) {
 					for (int i = 0; i < tags.getTags().length; i++) {
 						if (i > 0) {
 							sb.append(";");
@@ -163,11 +176,12 @@ public class MBeanSubscriber implements Subscriber {
 				monitoring = mbeans.get(objectName);
 			}
 
-			if (!monitorContextAttrTracker.containsKey(monitorName)) {
-				monitorContextAttrTracker.put(monitorName,
+			/*
+			if (!monitorContextAttrTracker.containsKey(name)) {
+				monitorContextAttrTracker.put(name,
 						new ContextAttributesTracker());
 			}
-			/*
+
 			ContextAttributesTracker contextAttrTracker = monitorContextAttrTracker
 					.get(monitorName);
 			AttributeChanges attrChanges = contextAttrTracker.add(hit, name,
@@ -180,11 +194,14 @@ public class MBeanSubscriber implements Subscriber {
 
 			if (hit.getContext().contains(ContextEntry.UNDEFINED)) {
 				monitoring.setValue(hit.getValue());
-				monitoring.setDescription(monitorDescription);
 			}
 			for (ContextEntry ce : hit.getContext()) {
 				if (ce.equals(ContextEntry.UNDEFINED)) {
 					continue;
+				}
+				if (monitoring.getContext() == null) {
+					monitoring
+							.setContext(new HashMap<String, List<ContextComposite>>());
 				}
 				if (!monitoring.getContext().containsKey(ce.getKey())) {
 					monitoring.getContext().put(ce.getKey(),

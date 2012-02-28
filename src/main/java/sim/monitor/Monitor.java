@@ -3,14 +3,12 @@ package sim.monitor;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import sim.monitor.processing.HitProcessor;
 import sim.monitor.subscribers.SubscribeUpdater;
 import sim.monitor.timing.TimePeriod;
 import sim.monitor.timing.TimeUnit;
@@ -42,18 +40,13 @@ import sim.monitor.transformers.TimeIntervalSampler;
  * @author val
  *
  */
-public class Monitor extends Publisher {
+public class Monitor extends TaggedMonitorNamer {
 
 	// private org.slf4j.Logger logger = LoggerFactory.getLogger(Monitor.class);
 
-	/**
-	 * The tags of the monitor
-	 */
-	protected Tags tags;
-
 	private List<Filter> filters = new ArrayList<Filter>();
-	private List<Rate> rates = new ArrayList<Rate>();
-	private boolean forcePublishRawValues = false;
+	List<Rate> rates = new ArrayList<Rate>();
+	boolean forcePublishRawValues = false;
 
 	private BlockingQueue<Hit> hits = new LinkedBlockingQueue<Hit>();
 
@@ -62,30 +55,13 @@ public class Monitor extends Publisher {
 	Monitor(String name, String description, boolean publishRawValues,
 			List<String> tags, List<Filter> filters,
 			List<sim.monitor.Rate> rates) {
-		super(name, description);
+		super(name, description, tags);
 		this.forcePublishRawValues = publishRawValues;
-		Collections.sort(tags);
-		this.tags = new Tags(tags.toArray(new String[0]));
 		this.filters = filters;
 		this.rates = rates;
 		for (Rate rate : this.rates) {
 			rate.setMonitor(this);
 		}
-	}
-
-	/**
-	 * @return the tags
-	 */
-	Tags getTags() {
-		return tags;
-	}
-
-	/**
-	 * @param tags
-	 *            the tags to set
-	 */
-	void setTags(Tags tags) {
-		this.tags = tags;
 	}
 
 	void acceptHit(long timestamp, Object value, Context context) {
@@ -129,11 +105,11 @@ public class Monitor extends Publisher {
 		return this.forcePublishRawValues;
 	}
 
-	public boolean hasMoreHits() {
+	boolean hasMoreHits() {
 		return !this.hits.isEmpty();
 	}
 
-	public void processNext() {
+	void processNext() {
 		processHits(hits.poll());
 	}
 
@@ -159,27 +135,10 @@ public class Monitor extends Publisher {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see sim.monitor.Publisher#publish()
-	 */
-	@Override
-	public void publish() {
-		SubscribeUpdater.instance().updateAllSubscribers(tmpHits, getTags(),
-				name, getDescription(), "value", "raw value", null, null);
+	private void publish() {
+		SubscribeUpdater.instance().updateAllSubscribers(tmpHits, this, null,
+				rates.isEmpty());
 		tmpHits.clear();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see sim.monitor.Publisher#getSuffix()
-	 */
-	@Override
-	public String getSuffix() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	/**

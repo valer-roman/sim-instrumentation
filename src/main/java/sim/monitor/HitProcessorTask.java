@@ -1,13 +1,12 @@
 /**
  * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
  */
-package sim.monitor.processing;
+package sim.monitor;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import sim.monitor.Monitor;
 
 /**
  * Task running the hit processing of the monitors

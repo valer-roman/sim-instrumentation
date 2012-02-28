@@ -20,27 +20,12 @@ class Max extends Rate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see sim.monitor.Rate#getAggregation()
 	 */
 	@Override
-	Aggregation getAggregation() {
+	public Aggregation getAggregation() {
 		return Aggregation.Max;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see sim.monitor.publishers.Aggregation#getSuffix()
-	 */
-	@Override
-	String getSuffix() {
-		String suffix = super.getSuffix();
-		if (suffix == null) {
-			return "MAX";
-		} else {
-			return "MAX/" + suffix;
-		}
 	}
 
 	/*

@@ -5,8 +5,8 @@ package sim.monitor.test;
 
 import junit.framework.TestCase;
 import sim.monitor.Builder;
+import sim.monitor.HitProcessor;
 import sim.monitor.Monitor;
-import sim.monitor.processing.HitProcessor;
 import sim.monitor.subscribers.MockSubscriber;
 import sim.monitor.subscribers.SubscribeUpdater;
 

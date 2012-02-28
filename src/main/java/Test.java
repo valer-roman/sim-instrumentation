@@ -72,7 +72,7 @@ public class Test {
 				.rates()
 					.addAverage()
 					.addAverage(TimeUnit.Second, 1)
-				.publishRawValues()
+				.keepGauges()
 				.build();
 
 		//mlv.addRateStatistic(Type.sum, TimeUnit.Second, 1, "sum rate", "desc sum rate");

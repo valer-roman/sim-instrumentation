@@ -15,7 +15,7 @@ import sim.monitor.timing.TimePeriod;
  * @author val
  *
  */
-public abstract class Rate extends Publisher {
+public abstract class Rate extends RateNamer {
 
 	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
 			.getLogger(Rate.class);
@@ -36,7 +36,8 @@ public abstract class Rate extends Publisher {
 
 	abstract Object computeAggregate(Object result, Object value);
 
-	abstract Aggregation getAggregation();
+	@Override
+	public abstract Aggregation getAggregation();
 
 	public Rate(TimePeriod rateTime, String name, String description) {
 		super(name, description);
@@ -66,6 +67,7 @@ public abstract class Rate extends Publisher {
 	/**
 	 * @return the rateTime
 	 */
+	@Override
 	public TimePeriod getRateTime() {
 		return rateTime;
 	}
@@ -74,22 +76,10 @@ public abstract class Rate extends Publisher {
 	 * @param rateTime
 	 *            the rateTime to set
 	 */
+	@Override
 	public void setRateTime(TimePeriod rateTime) {
 		this.rateTime = rateTime;
 		this.rateTimeInMillis = this.rateTime.getSeconds() * 1000;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see sim.monitor.Statistic#getSuffix()
-	 */
-	@Override
-	String getSuffix() {
-		if (rateTime != null) {
-			return rateTime.toString();
-		}
-		return null;
 	}
 
 	protected void resetValues() {
@@ -146,22 +136,14 @@ public abstract class Rate extends Publisher {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see sim.monitor.publishers.Publisher#publish()
-	 */
-	@Override
-	public void publish() {
-		String name = null;
-		if (this.getName() == null) {
-			name = this.getSuffix();
-		} else {
-			name = this.getName();
-		}
-		SubscribeUpdater.instance().updateAllSubscribers(resultHits,
-				monitor.getTags(), monitor.getName(), monitor.getDescription(),
-				name, getDescription(), getRateTime(), getAggregation());
+	void publish() {
+		SubscribeUpdater
+				.instance()
+				.updateAllSubscribers(
+						resultHits,
+						this.monitor,
+						this,
+						(this.monitor.rates.size() == 1 && this.monitor.forcePublishRawValues == false));
 		resultHits.clear();
 	}
 

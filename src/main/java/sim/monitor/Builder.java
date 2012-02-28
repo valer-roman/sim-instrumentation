@@ -6,7 +6,6 @@ package sim.monitor;
 import java.util.ArrayList;
 import java.util.List;
 
-import sim.monitor.processing.HitProcessor;
 import sim.monitor.timing.TimePeriod;
 import sim.monitor.timing.TimeUnit;
 import sim.monitor.transformers.DeltaTransformer;
@@ -47,7 +46,7 @@ public class Builder {
 
 	}
 
-	public interface Rates extends PublishRawValues, Build {
+	public interface Rates extends Gauges, Build {
 
 		public Rates addSum();
 
@@ -120,9 +119,9 @@ public class Builder {
 
 	}
 
-	public interface PublishRawValues {
+	public interface Gauges {
 
-		public Build publishRawValues();
+		public Build keepGauges();
 
 	}
 
@@ -138,7 +137,7 @@ public class Builder {
 	private Builder builder = this;
 	private String name;
 	private String description;
-	private boolean publishRawValues = false;
+	private boolean keepGauge = false;
 	private List<String> tagValues = new ArrayList<String>();
 	private List<Filter> filterInstances = new ArrayList<Filter>();
 	private List<sim.monitor.Rate> rateInstances = new ArrayList<sim.monitor.Rate>();
@@ -237,8 +236,8 @@ public class Builder {
 			return builder.buildTimer();
 		}
 
-		public Build publishRawValues() {
-			builder.publishRawValues = true;
+		public Build keepGauges() {
+			builder.keepGauge = true;
 			return build;
 		}
 
@@ -604,7 +603,7 @@ public class Builder {
 
 	private sim.monitor.Monitor build() {
 		sim.monitor.Monitor monitor = new sim.monitor.Monitor(name,
-				description, publishRawValues, tagValues, filterInstances,
+				description, keepGauge, tagValues, filterInstances,
 				rateInstances);
 		HitProcessor.instance().acceptMonitor(monitor);
 		return monitor;
